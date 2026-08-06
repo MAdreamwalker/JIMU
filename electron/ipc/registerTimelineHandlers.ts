@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { ipcMain, webContents } from 'electron';
+import { ipcMain } from 'electron';
 import type { TimelineClip, TimelineDocument, TimelineExportInput, TimelineTrack, TimelineTrackKind } from '../../src/domain/timeline.js';
 import { createProjectStore } from '../services/projectStore.js';
 import { createTimelineExporter, type TimelineExporter } from '../services/timelineExport.js';
@@ -9,11 +9,7 @@ const trackKinds: readonly TimelineTrackKind[] = ['video', 'image', 'audio', 'su
 
 export function registerTimelineHandlers(rootPath: string): void {
   const projectStore = createProjectStore(rootPath);
-  const exporter = createTimelineExporter((progress) => {
-    for (const contents of webContents.getAllWebContents()) {
-      contents.send('timeline:exportProgress', progress);
-    }
-  });
+  const exportJobs = new Map<string, { exporter: TimelineExporter; sender: Electron.WebContents }>();
 
   ipcMain.handle('timeline:load', async (_event, projectId: unknown): Promise<TimelineDocument> => {
     const timelinePath = await getTimelinePath(projectStore, projectId);
@@ -34,13 +30,25 @@ export function registerTimelineHandlers(rootPath: string): void {
     await fs.writeFile(await getTimelinePath(projectStore, projectId), JSON.stringify(document, null, 2), 'utf8');
   });
 
-  ipcMain.handle('timeline:exportMp4', (_event, input: unknown) => {
-    return exporter.exportTimeline(validateTimelineExportInput(input));
+  ipcMain.handle('timeline:exportMp4', (event, input: unknown) => {
+    const exporter = createTimelineExporter((progress) => {
+      event.sender.send('timeline:exportProgress', progress);
+    });
+
+    return exporter.exportTimeline(validateTimelineExportInput(input)).then(({ jobId }) => {
+      exportJobs.set(jobId, { exporter, sender: event.sender });
+      return { jobId };
+    });
   });
 
-  ipcMain.handle('timeline:cancelExport', (_event, jobId: unknown) => {
+  ipcMain.handle('timeline:cancelExport', (event, jobId: unknown) => {
     if (!isNonEmptyString(jobId)) throw new Error('Invalid export job id');
-    return exporter.cancelExport(jobId);
+    const job = exportJobs.get(jobId);
+    if (!job || job.sender !== event.sender) return false;
+
+    const cancelled = job.exporter.cancelExport(jobId);
+    if (cancelled) exportJobs.delete(jobId);
+    return cancelled;
   });
 }
 

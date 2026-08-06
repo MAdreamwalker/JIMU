@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { TimelineTrack } from '../components/timeline/TimelineTrack';
 import type { TimelineDocument, TimelineTrack as TimelineTrackModel, TimelineTrackKind } from '../domain/timeline';
+import type { TimelineExportProgress } from '../../electron/services/timelineExport';
 
 const trackNames: Record<TimelineTrackKind, string> = {
   video: '\u89c6\u9891\u8f68',
@@ -19,6 +20,7 @@ export function TimelineEditor({ projectId }: { projectId: string }) {
   const [timeline, setTimeline] = useState<TimelineDocument>(emptyTimeline);
   const [loadError, setLoadError] = useState('');
   const [exportError, setExportError] = useState('');
+  const [exportProgress, setExportProgress] = useState<TimelineExportProgress | null>(null);
 
   useEffect(() => {
     let isCurrent = true;
@@ -40,6 +42,8 @@ export function TimelineEditor({ projectId }: { projectId: string }) {
     };
   }, [projectId]);
 
+  useEffect(() => window.threecut.timeline.onExportProgress(setExportProgress), []);
+
   const tracks = trackKinds.map((kind) => timeline.tracks.find((track) => track.kind === kind) ?? emptyTrack(kind));
 
   const exportMp4 = () => {
@@ -56,6 +60,7 @@ export function TimelineEditor({ projectId }: { projectId: string }) {
     <section aria-labelledby="timeline-title" data-project-id={projectId}>
       <h1 id="timeline-title">{timelineTitle}</h1>
       {loadError || exportError ? <p role="alert">{loadError || exportError}</p> : null}
+      {exportProgress ? <p role="status">{exportProgress.status}</p> : null}
       {tracks.map((track) => <TimelineTrack key={track.kind} track={track} />)}
       <button type="button" onClick={exportMp4}>{exportLabel}</button>
     </section>

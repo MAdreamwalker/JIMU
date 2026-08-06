@@ -4,6 +4,8 @@ import type { CanvasDocument } from '../src/domain/canvas.js';
 import type { DirectorDocument } from '../src/domain/director.js';
 import type { ProjectAspectRatio, ProjectMetadata } from '../src/domain/project.js';
 import type { TimelineDocument, TimelineExportInput } from '../src/domain/timeline.js';
+import type { MediaAnalysis } from './services/mediaAnalysis.js';
+import type { TimelineExportProgress } from './services/timelineExport.js';
 import type { AppConfig } from './services/configStore.js';
 import type { SkillDefinition } from './ipc/registerPromptSkillHandlers.js';
 
@@ -45,9 +47,16 @@ contextBridge.exposeInMainWorld('threecut', {
       ipcRenderer.invoke('timeline:exportMp4', input) as Promise<{ jobId: string }>
     ),
     cancelExport: (jobId: string) => ipcRenderer.invoke('timeline:cancelExport', jobId) as Promise<boolean>,
+    onExportProgress: (callback: (progress: TimelineExportProgress) => void) => {
+      const listener = (_event: Electron.IpcRendererEvent, progress: TimelineExportProgress) => callback(progress);
+      ipcRenderer.on('timeline:exportProgress', listener);
+      return () => ipcRenderer.removeListener('timeline:exportProgress', listener);
+    },
   },
   media: {
-    analyze: (filePath: string) => ipcRenderer.invoke('media:analyze', filePath),
+    analyze: (projectId: string, mediaPath: string) => (
+      ipcRenderer.invoke('media:analyze', { projectId, mediaPath }) as Promise<MediaAnalysis>
+    ),
   },
   config: {
     getAll: () => ipcRenderer.invoke('config:getAll') as Promise<AppConfig>,

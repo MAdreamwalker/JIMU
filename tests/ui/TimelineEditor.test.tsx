@@ -10,6 +10,7 @@ describe('TimelineEditor', () => {
         save: vi.fn(),
         exportMp4: vi.fn(),
         cancelExport: vi.fn(),
+        onExportProgress: vi.fn().mockReturnValue(() => undefined),
       },
     });
 

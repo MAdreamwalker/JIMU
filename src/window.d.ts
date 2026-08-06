@@ -4,6 +4,7 @@ import type { CanvasDocument } from './domain/canvas';
 import type { DirectorDocument } from './domain/director';
 import type { TimelineDocument, TimelineExportInput } from './domain/timeline';
 import type { MediaAnalysis } from '../electron/services/mediaAnalysis';
+import type { TimelineExportProgress } from '../electron/services/timelineExport';
 import type { AppConfig } from '../electron/services/configStore';
 import type { SkillDefinition } from '../electron/ipc/registerPromptSkillHandlers';
 
@@ -37,9 +38,10 @@ declare global {
         save: (projectId: string, timeline: TimelineDocument) => Promise<void>;
         exportMp4: (input: TimelineExportInput) => Promise<{ jobId: string }>;
         cancelExport: (jobId: string) => Promise<boolean>;
+        onExportProgress: (callback: (progress: TimelineExportProgress) => void) => () => void;
       };
       media: {
-        analyze: (filePath: string) => Promise<MediaAnalysis>;
+        analyze: (projectId: string, mediaPath: string) => Promise<MediaAnalysis>;
       };
       config: {
         getAll: () => Promise<AppConfig>;

@@ -14,6 +14,7 @@ describe('App', () => {
         save: vi.fn(),
         exportMp4: vi.fn(),
         cancelExport: vi.fn(),
+        onExportProgress: vi.fn().mockReturnValue(() => undefined),
       },
       config: { getAll: vi.fn().mockResolvedValue({ providers: [] }), save: vi.fn() },
       storyboardPrompts: { read: vi.fn().mockResolvedValue({}), save: vi.fn() },

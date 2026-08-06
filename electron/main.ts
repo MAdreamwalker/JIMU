@@ -42,7 +42,7 @@ app.whenReady().then(async () => {
     skillsPath: path.join(userDataPath, 'skills.json'),
   });
   registerTimelineHandlers(projectsPath);
-  registerMediaHandlers();
+  registerMediaHandlers(projectsPath);
   await createWindow();
 });
 
