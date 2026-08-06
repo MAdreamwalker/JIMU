@@ -12,6 +12,7 @@ const labels: Record<Asset['kind'], string> = {
 
 export function CreationCanvas({ projectId }: { projectId: string }) {
   const [assets, setAssets] = useState<Asset[]>([]);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     let isCurrent = true;
@@ -19,10 +20,12 @@ export function CreationCanvas({ projectId }: { projectId: string }) {
     void window.threecut.canvas.load(projectId).then((document) => {
       if (isCurrent) {
         setAssets(document.assets);
+        setLoadError('');
       }
-    }).catch(() => {
+    }).catch((error: unknown) => {
       if (isCurrent) {
         setAssets([]);
+        setLoadError(error instanceof Error ? error.message : 'Unable to load canvas');
       }
     });
 
@@ -34,6 +37,7 @@ export function CreationCanvas({ projectId }: { projectId: string }) {
   return (
     <section aria-labelledby="canvas-title" data-project-id={projectId}>
       <h1 id="canvas-title">鍒涗綔鐢诲竷</h1>
+      {loadError ? <p role="alert">{loadError}</p> : null}
       {Object.entries(labels).map(([kind, label]) => (
         <section key={kind} aria-labelledby={`asset-${kind}`}>
           <h2 id={`asset-${kind}`}>{label}</h2>
