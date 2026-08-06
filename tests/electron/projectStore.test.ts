@@ -21,6 +21,16 @@ describe('project store', () => {
     expect(loaded.name).toBe('Demo Project');
   });
 
+  it('lists registered projects in registry order', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-projects-'));
+    const store = createProjectStore(root);
+
+    const first = await store.createProject({ name: 'First Project', aspectRatio: '16:9' });
+    const second = await store.createProject({ name: 'Second Project', aspectRatio: '9:16' });
+
+    await expect(store.listProjects()).resolves.toEqual([first, second]);
+  });
+
   it('rejects project names that are not a single safe folder segment', async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-projects-'));
     const store = createProjectStore(root);

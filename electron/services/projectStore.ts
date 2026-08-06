@@ -10,6 +10,8 @@ interface ProjectIndexEntry {
 
 export interface ProjectStore {
   createProject(input: { name: string; aspectRatio: ProjectAspectRatio }): Promise<ProjectMetadata>;
+  /** Rejects when a registry entry references a missing or corrupt project file. */
+  listProjects(): Promise<ProjectMetadata[]>;
   readProject(projectId: string): Promise<ProjectMetadata>;
 }
 
@@ -58,6 +60,11 @@ export function createProjectStore(rootPath: string): ProjectStore {
     await fs.writeFile(await safePath(filePath), JSON.stringify(value, null, 2), 'utf8');
   }
 
+  async function readProjectEntry(entry: ProjectIndexEntry): Promise<ProjectMetadata> {
+    const projectFile = await safePath(path.join(projectPath(entry.folder), 'project.json'));
+    return JSON.parse(await fs.readFile(projectFile, 'utf8')) as ProjectMetadata;
+  }
+
   return {
     async createProject(input) {
       assertSafeProjectName(input.name);
@@ -85,6 +92,10 @@ export function createProjectStore(rootPath: string): ProjectStore {
 
       return project;
     },
+    async listProjects() {
+      const registry = await readRegistry();
+      return Promise.all(registry.map(readProjectEntry));
+    },
     async readProject(projectId) {
       const registry = await readRegistry();
       const entry = registry.find((item) => item.id === projectId);
@@ -92,8 +103,7 @@ export function createProjectStore(rootPath: string): ProjectStore {
         throw new Error('Project not found');
       }
 
-      const projectFile = await safePath(path.join(projectPath(entry.folder), 'project.json'));
-      return JSON.parse(await fs.readFile(projectFile, 'utf8')) as ProjectMetadata;
+      return readProjectEntry(entry);
     },
   };
 }

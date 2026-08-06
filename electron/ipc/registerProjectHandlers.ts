@@ -16,5 +16,6 @@ export function registerProjectHandlers(rootPath: string): void {
     },
   );
 
+  ipcMain.handle('registry:list', () => store.listProjects());
   ipcMain.handle('registry:get', (_event, projectId: string) => store.readProject(projectId));
 }
