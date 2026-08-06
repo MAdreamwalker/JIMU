@@ -5,7 +5,7 @@ export type Route = {
 };
 
 export const routes: readonly Route[] = [
-  { path: '/', title: 'Projects', pattern: /^\/$/ },
+  { path: '/', title: 'Project Center', pattern: /^\/$/ },
   {
     path: '/project/:projectId/canvas',
     title: 'Canvas',

@@ -18,7 +18,7 @@ describe('App', () => {
   });
 
   it.each([
-    ['/', 'Projects'],
+    ['/', '项目中心'],
     ['/project/demo/canvas', 'Canvas'],
     ['/project/demo/storyboard', 'Storyboard'],
     ['/project/demo/director', 'Director'],

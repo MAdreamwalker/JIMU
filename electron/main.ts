@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { registerProjectHandlers } from './ipc/registerProjectHandlers.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -22,7 +23,10 @@ async function createWindow() {
   );
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(async () => {
+  registerProjectHandlers(path.join(app.getPath('userData'), 'projects'));
+  await createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
