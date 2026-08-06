@@ -14,6 +14,7 @@ export interface PackageManifest {
 
 const maxEntrySize = 500 * 1024 * 1024;
 const maxPackageSize = 500 * 1024 * 1024;
+const maxPackageEntries = 10_000;
 const blockedSegments = new Set(['', '.', '..']);
 
 export function validatePackageEntry(entry: PackageEntry): void {
@@ -21,14 +22,16 @@ export function validatePackageEntry(entry: PackageEntry): void {
     throw new Error('Invalid package entry');
   }
 
-  const normalized = entry.path.replace(/\\/g, '/');
+  const normalized = entry.path;
   const segments = normalized.split('/');
   if (
-    normalized.includes('\0')
+    normalized !== normalized.trim()
+    || normalized.includes('\0')
+    || normalized.includes('\\')
     || segments.some((segment) => blockedSegments.has(segment))
     || path.posix.isAbsolute(normalized)
     || path.win32.isAbsolute(normalized)
-    || /^[a-z]:/i.test(normalized)
+    || /^[a-z][a-z0-9+.-]*:/i.test(normalized)
   ) {
     throw new Error('Package entry path is unsafe');
   }
@@ -40,6 +43,7 @@ export function validatePackageEntry(entry: PackageEntry): void {
 
 export function validatePackageEntries(entries: PackageEntry[]): void {
   if (!Array.isArray(entries)) throw new Error('Invalid package entries');
+  if (entries.length > maxPackageEntries) throw new Error('Package has too many entries');
 
   const totalSize = entries.reduce((sum, entry) => {
     if (!entry || typeof entry.size !== 'number' || !Number.isFinite(entry.size) || entry.size < 0) {
@@ -49,13 +53,16 @@ export function validatePackageEntries(entries: PackageEntry[]): void {
   }, 0);
   if (totalSize > maxPackageSize) throw new Error('Package is too large');
 
+  const paths = new Set<string>();
   for (const entry of entries) {
     validatePackageEntry(entry);
+    if (paths.has(entry.path)) throw new Error('Package contains duplicate entry paths');
+    paths.add(entry.path);
   }
 }
 
 export function validatePackageManifest(manifest: unknown): asserts manifest is PackageManifest {
-  if (!manifest || typeof manifest !== 'object' || !('entries' in manifest) || !Array.isArray(manifest.entries)) {
+  if (!hasExactKeys(manifest, ['schemaVersion', 'projectId', 'entries']) || !Array.isArray(manifest.entries)) {
     throw new Error('Invalid package manifest');
   }
 
@@ -75,13 +82,37 @@ export function validatePackageManifest(manifest: unknown): asserts manifest is 
 
 export async function exportProjectPackage(projectId: string, destinationPath: string): Promise<string> {
   if (!isNonEmptyString(projectId)) throw new Error('Invalid project id');
-  if (!isNonEmptyString(destinationPath)) throw new Error('Invalid package destination path');
+  validatePackageFilePath(destinationPath);
 
   return destinationPath;
 }
 
-export async function importProjectPackage(_packagePath: string): Promise<ProjectMetadata> {
+export async function importProjectPackage(packagePath: string): Promise<ProjectMetadata> {
+  validatePackageFilePath(packagePath);
   throw new Error('Project package import is not implemented');
+}
+
+export function validatePackageFilePath(value: unknown): asserts value is string {
+  if (!isSafePackageRelativePath(value)) throw new Error('Invalid package file path');
+}
+
+function isSafePackageRelativePath(value: unknown): value is string {
+  return isNonEmptyString(value)
+    && value === value.trim()
+    && !value.includes('\0')
+    && !value.includes('\\')
+    && !path.posix.isAbsolute(value)
+    && !path.win32.isAbsolute(value)
+    && !/^[a-z][a-z0-9+.-]*:/i.test(value)
+    && value.split('/').every((segment) => !blockedSegments.has(segment));
+}
+
+function hasExactKeys(value: unknown, keys: readonly string[]): value is Record<string, unknown> {
+  return !!value
+    && typeof value === 'object'
+    && !Array.isArray(value)
+    && Object.keys(value).length === keys.length
+    && keys.every((key) => Object.hasOwn(value, key));
 }
 
 function isNonEmptyString(value: unknown): value is string {

@@ -55,6 +55,10 @@ declare global {
         list: () => Promise<SkillDefinition[]>;
         save: (skills: SkillDefinition[]) => Promise<void>;
       };
+      projectPackage: {
+        export: (projectId: string, destinationPath: string) => Promise<string>;
+        import: (packagePath: string) => Promise<ProjectMetadata>;
+      };
     };
   }
 }

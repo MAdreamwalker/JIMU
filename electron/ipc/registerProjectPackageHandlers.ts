@@ -2,6 +2,7 @@ import { ipcMain } from 'electron';
 import {
   exportProjectPackage,
   importProjectPackage,
+  validatePackageFilePath,
 } from '../services/projectPackage.js';
 
 export function registerProjectPackageHandlers(): void {
@@ -16,7 +17,7 @@ export function registerProjectPackageHandlers(): void {
 }
 
 function validateExportInput(input: unknown): { projectId: string; destinationPath: string } {
-  if (!input || typeof input !== 'object' || Array.isArray(input)) {
+  if (!hasExactKeys(input, ['projectId', 'destinationPath'])) {
     throw new Error('Invalid project export input');
   }
 
@@ -24,21 +25,38 @@ function validateExportInput(input: unknown): { projectId: string; destinationPa
     projectId?: unknown;
     destinationPath?: unknown;
   };
-  if (!isNonEmptyString(projectId) || !isNonEmptyString(destinationPath)) {
+  if (!isNonEmptyString(projectId)) {
+    throw new Error('Invalid project export input');
+  }
+  try {
+    validatePackageFilePath(destinationPath);
+  } catch {
     throw new Error('Invalid project export input');
   }
 
-  return { projectId, destinationPath };
+  return { projectId: projectId.trim(), destinationPath };
 }
 
 function validateImportInput(input: unknown): string {
-  if (!input || typeof input !== 'object' || Array.isArray(input)) {
+  if (!hasExactKeys(input, ['packagePath'])) {
     throw new Error('Invalid project import input');
   }
 
   const { packagePath } = input as { packagePath?: unknown };
-  if (!isNonEmptyString(packagePath)) throw new Error('Invalid project import input');
+  try {
+    validatePackageFilePath(packagePath);
+  } catch {
+    throw new Error('Invalid project import input');
+  }
   return packagePath;
+}
+
+function hasExactKeys(value: unknown, keys: readonly string[]): value is Record<string, unknown> {
+  return !!value
+    && typeof value === 'object'
+    && !Array.isArray(value)
+    && Object.keys(value).length === keys.length
+    && keys.every((key) => Object.hasOwn(value, key));
 }
 
 function isNonEmptyString(value: unknown): value is string {
