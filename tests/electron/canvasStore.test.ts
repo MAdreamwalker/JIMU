@@ -22,6 +22,7 @@ describe('canvas store', () => {
     'https://example.com/asset.png',
     'data:image/png;base64,abc',
     '../outside.png',
+    '..\\outside.png',
     'media/../outside.png',
   ])('rejects unsafe media path %s', (mediaPath) => {
     expect(() => validateCanvasDocument(createCanvas({ mediaPaths: [mediaPath] }))).toThrow('Invalid media path');

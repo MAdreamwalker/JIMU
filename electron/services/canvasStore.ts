@@ -115,6 +115,7 @@ function isSafeProjectRelativePath(value: unknown): value is string {
   if (!isNonEmptyString(value)
     || value !== value.trim()
     || value.includes('\u0000')
+    || value.includes('\\')
     || path.posix.isAbsolute(value)
     || path.win32.isAbsolute(value)
     || /^[a-z][a-z0-9+.-]*:/i.test(value)) {
