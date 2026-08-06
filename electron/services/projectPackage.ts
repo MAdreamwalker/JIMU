@@ -28,7 +28,7 @@ export function validatePackageEntry(entry: PackageEntry): void {
     normalized !== normalized.trim()
     || normalized.includes('\0')
     || normalized.includes('\\')
-    || segments.some((segment) => blockedSegments.has(segment))
+    || segments.some((segment) => blockedSegments.has(segment) || /[ .]$/.test(segment))
     || path.posix.isAbsolute(normalized)
     || path.win32.isAbsolute(normalized)
     || /^[a-z][a-z0-9+.-]*:/i.test(normalized)
@@ -56,8 +56,9 @@ export function validatePackageEntries(entries: PackageEntry[]): void {
   const paths = new Set<string>();
   for (const entry of entries) {
     validatePackageEntry(entry);
-    if (paths.has(entry.path)) throw new Error('Package contains duplicate entry paths');
-    paths.add(entry.path);
+    const canonicalPath = entry.path.toLowerCase();
+    if (paths.has(canonicalPath)) throw new Error('Package contains duplicate entry paths');
+    paths.add(canonicalPath);
   }
 }
 
@@ -82,29 +83,35 @@ export function validatePackageManifest(manifest: unknown): asserts manifest is 
 
 export async function exportProjectPackage(projectId: string, destinationPath: string): Promise<string> {
   if (!isNonEmptyString(projectId)) throw new Error('Invalid project id');
-  validatePackageFilePath(destinationPath);
+  validateExternalPackageFilePath(destinationPath);
 
   return destinationPath;
 }
 
 export async function importProjectPackage(packagePath: string): Promise<ProjectMetadata> {
-  validatePackageFilePath(packagePath);
+  validateExternalPackageFilePath(packagePath);
   throw new Error('Project package import is not implemented');
 }
 
-export function validatePackageFilePath(value: unknown): asserts value is string {
-  if (!isSafePackageRelativePath(value)) throw new Error('Invalid package file path');
+export function validateExternalPackageFilePath(value: unknown): asserts value is string {
+  if (!isSafeExternalPackageFilePath(value)) throw new Error('Invalid package file path');
 }
 
-function isSafePackageRelativePath(value: unknown): value is string {
-  return isNonEmptyString(value)
-    && value === value.trim()
-    && !value.includes('\0')
-    && !value.includes('\\')
-    && !path.posix.isAbsolute(value)
-    && !path.win32.isAbsolute(value)
-    && !/^[a-z][a-z0-9+.-]*:/i.test(value)
-    && value.split('/').every((segment) => !blockedSegments.has(segment));
+function isSafeExternalPackageFilePath(value: unknown): value is string {
+  if (!isNonEmptyString(value) || value !== value.trim() || value.includes('\0')) return false;
+
+  const normalized = value.replace(/\\/g, '/');
+  const isAbsolute = path.posix.isAbsolute(value) || path.win32.isAbsolute(value);
+  const isDriveRelative = /^[a-z]:/i.test(value) && !path.win32.isAbsolute(value);
+  if (
+    isDriveRelative
+    || (!isAbsolute && /^[a-z][a-z0-9+.-]*:/i.test(value))
+    || normalized.split('/').some((segment) => segment === '.' || segment === '..')
+  ) {
+    return false;
+  }
+
+  return path.posix.extname(normalized).toLowerCase() === '.3cut';
 }
 
 function hasExactKeys(value: unknown, keys: readonly string[]): value is Record<string, unknown> {

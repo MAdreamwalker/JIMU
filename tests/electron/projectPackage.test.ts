@@ -46,6 +46,8 @@ describe('project package safety', () => {
     expect(() => validatePackageEntry({ path: 'C:secret.txt', size: 10 })).toThrow('Package entry path is unsafe');
     expect(() => validatePackageEntry({ path: 'Demo\\project.json', size: 10 })).toThrow('Package entry path is unsafe');
     expect(() => validatePackageEntry({ path: 'Demo/project.json\u0000', size: 10 })).toThrow('Package entry path is unsafe');
+    expect(() => validatePackageEntry({ path: 'Demo/project.json ', size: 10 })).toThrow('Package entry path is unsafe');
+    expect(() => validatePackageEntry({ path: 'Demo/project.json.', size: 10 })).toThrow('Package entry path is unsafe');
     expect(() => validatePackageEntry({ path: 'Demo/project.json', size: -1 })).toThrow('Package entry is too large');
     expect(() => validatePackageEntry({ path: 'Demo/project.json', size: 1.5 })).toThrow('Package entry is too large');
   });
@@ -71,6 +73,13 @@ describe('project package safety', () => {
     ])).toThrow('Package contains duplicate entry paths');
   });
 
+  it('blocks case-insensitive duplicate package entry paths', () => {
+    expect(() => validatePackageEntries([
+      { path: 'Demo/file.json', size: 10 },
+      { path: 'Demo/FILE.JSON', size: 10 },
+    ])).toThrow('Package contains duplicate entry paths');
+  });
+
   it('requires a versioned manifest and project json entry', () => {
     expect(() => validatePackageManifest({
       schemaVersion: 1,
@@ -92,12 +101,21 @@ describe('project package safety', () => {
 
   it('rejects unsafe package file paths before shell behavior', async () => {
     const unsafePaths = ['', '  Demo.3cut', 'Demo.3cut  ', '../Demo.3cut', '..\\Demo.3cut',
-      '/tmp/Demo.3cut', 'C:\\tmp\\Demo.3cut', 'C:Demo.3cut', 'Demo.3cut\u0000'];
+      'C:\\tmp\\..\\Demo.3cut', 'C:Demo.3cut', 'Demo.3cut\u0000', 'C:\\tmp\\Demo.zip'];
 
     for (const packagePath of unsafePaths) {
       await expect(exportProjectPackage('proj_1', packagePath)).rejects.toThrow('Invalid package file path');
       await expect(importProjectPackage(packagePath)).rejects.toThrow('Invalid package file path');
     }
+  });
+
+  it('allows normal absolute package file paths returned by file dialogs', async () => {
+    const windowsPath = 'C:\\Users\\Me\\Desktop\\Demo.3cut';
+    const posixPath = '/tmp/Demo.3cut';
+
+    await expect(exportProjectPackage('proj_1', windowsPath)).resolves.toBe(windowsPath);
+    await expect(exportProjectPackage('proj_1', posixPath)).resolves.toBe(posixPath);
+    await expect(importProjectPackage(windowsPath)).rejects.toThrow('not implemented');
   });
 });
 
@@ -113,6 +131,12 @@ describe('project package IPC handlers', () => {
       .resolves.toBe('Demo.3cut');
     await expect(handlers.get('project:import')!({}, { packagePath: 'Demo.3cut' }))
       .rejects.toThrow('not implemented');
+  });
+
+  it('forwards absolute package file paths from external file dialogs', async () => {
+    const destinationPath = 'C:\\Users\\Me\\Desktop\\Demo.3cut';
+    await expect(handlers.get('project:export')!({}, { projectId: 'proj_1', destinationPath }))
+      .resolves.toBe(destinationPath);
   });
 
   it('rejects malformed IPC payloads', async () => {

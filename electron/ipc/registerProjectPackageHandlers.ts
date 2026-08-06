@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import {
   exportProjectPackage,
   importProjectPackage,
-  validatePackageFilePath,
+  validateExternalPackageFilePath,
 } from '../services/projectPackage.js';
 
 export function registerProjectPackageHandlers(): void {
@@ -29,7 +29,7 @@ function validateExportInput(input: unknown): { projectId: string; destinationPa
     throw new Error('Invalid project export input');
   }
   try {
-    validatePackageFilePath(destinationPath);
+    validateExternalPackageFilePath(destinationPath);
   } catch {
     throw new Error('Invalid project export input');
   }
@@ -44,7 +44,7 @@ function validateImportInput(input: unknown): string {
 
   const { packagePath } = input as { packagePath?: unknown };
   try {
-    validatePackageFilePath(packagePath);
+    validateExternalPackageFilePath(packagePath);
   } catch {
     throw new Error('Invalid project import input');
   }
