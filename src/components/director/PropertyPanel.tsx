@@ -9,11 +9,11 @@ export function PropertyPanel({ object }: { object: DirectorObject | null }) {
           <p>{object.name}</p>
           <label>
             位置 X
-            <input type="number" defaultValue={object.position.x} />
+            <input data-testid="director-position-x" type="number" value={object.position.x} readOnly />
           </label>
           <label>
             旋转 Y
-            <input type="number" defaultValue={object.rotation.y} />
+            <input data-testid="director-rotation-y" type="number" value={object.rotation.y} readOnly />
           </label>
         </>
       ) : <p>选择一个对象</p>}
