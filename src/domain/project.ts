@@ -1,4 +1,4 @@
-import { createId } from './ids';
+import { createId } from './ids.js';
 
 export type ProjectAspectRatio = '16:9' | '9:16' | '1:1' | '4:3' | 'custom';
 export type ProjectType = 'storyboard' | 'short-video' | 'animation' | 'mixed';
