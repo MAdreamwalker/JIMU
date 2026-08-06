@@ -7,6 +7,7 @@ import type { MediaAnalysis } from '../electron/services/mediaAnalysis';
 import type { TimelineExportProgress } from '../electron/services/timelineExport';
 import type { AppConfig } from '../electron/services/configStore';
 import type { SkillDefinition } from '../electron/ipc/registerPromptSkillHandlers';
+import type { TaskListItem } from '../electron/ipc/registerTaskHandlers';
 
 export {};
 
@@ -54,6 +55,9 @@ declare global {
       skills: {
         list: () => Promise<SkillDefinition[]>;
         save: (skills: SkillDefinition[]) => Promise<void>;
+      };
+      tasks: {
+        list: () => Promise<TaskListItem[]>;
       };
       projectPackage: {
         export: (projectId: string, destinationPath: string) => Promise<string>;

@@ -50,6 +50,7 @@ describe('full workflow contracts', () => {
       'registry',
       'skills',
       'storyboardPrompts',
+      'tasks',
       'timeline',
     ]);
 
@@ -65,6 +66,7 @@ describe('full workflow contracts', () => {
     await api.config.getAll();
     await api.storyboardPrompts.read();
     await api.skills.list();
+    await api.tasks.list();
     await api.projectPackage.export('demo', 'exports/demo.3cut');
     await api.projectPackage.import('exports/demo.3cut');
 
@@ -77,6 +79,7 @@ describe('full workflow contracts', () => {
       'config:getAll',
       'storyboardPrompts:read',
       'skills:list',
+      'tasks:list',
       'project:export',
       'project:import',
     ]);

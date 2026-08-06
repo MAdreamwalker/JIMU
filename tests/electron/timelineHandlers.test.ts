@@ -38,6 +38,44 @@ describe('timeline IPC handlers', () => {
       progress: 0,
     });
   });
+
+  it('rejects export outputs outside the exports mp4 contract', async () => {
+    const sender = { send: vi.fn() };
+    registerTimelineHandlers('tmp/timeline-handler-root');
+
+    expect(() => handlers.get('timeline:exportMp4')!({ sender }, {
+      ...validExportInput(),
+      outputPath: 'media/videos/timeline.mp4',
+    })).toThrow('Invalid timeline export input');
+    expect(() => handlers.get('timeline:exportMp4')!({ sender }, {
+      ...validExportInput(),
+      outputPath: 'exports/timeline.mov',
+    })).toThrow('Invalid timeline export input');
+  });
+
+  it('rejects timeline clips whose sources are not project media paths', async () => {
+    const sender = { send: vi.fn() };
+    registerTimelineHandlers('tmp/timeline-handler-root');
+
+    expect(() => handlers.get('timeline:exportMp4')!({ sender }, {
+      ...validExportInput(),
+      timeline: {
+        durationSeconds: 10,
+        tracks: [{
+          id: 'track-video',
+          kind: 'video',
+          name: 'Video',
+          clips: [{
+            id: 'clip-1',
+            sourcePath: 'exports/private.mp4',
+            startSeconds: 0,
+            durationSeconds: 10,
+            offsetSeconds: 0,
+          }],
+        }],
+      },
+    })).toThrow('Invalid timeline document');
+  });
 });
 
 function validExportInput() {

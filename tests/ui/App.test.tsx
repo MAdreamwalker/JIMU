@@ -19,6 +19,7 @@ describe('App', () => {
       config: { getAll: vi.fn().mockResolvedValue({ providers: [] }), save: vi.fn() },
       storyboardPrompts: { read: vi.fn().mockResolvedValue({}), save: vi.fn() },
       skills: { list: vi.fn().mockResolvedValue([]), save: vi.fn() },
+      tasks: { list: vi.fn().mockResolvedValue([]) },
     });
   });
 
@@ -60,5 +61,12 @@ describe('App', () => {
     fireEvent(window, new HashChangeEvent('hashchange'));
 
     expect(screen.getByRole('heading', { name: 'Tasks' })).toBeInTheDocument();
+  });
+
+  it('renders the task center route through the real page component', async () => {
+    window.location.hash = '#/tasks';
+    render(<App />);
+
+    expect(await screen.findByRole('status')).toHaveTextContent('No tasks');
   });
 });

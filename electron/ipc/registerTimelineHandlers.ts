@@ -95,7 +95,7 @@ function validateTimelineClip(value: unknown): TimelineClip {
   const validKeys = ['id', 'sourcePath', 'startSeconds', 'durationSeconds', 'offsetSeconds', 'label'];
   if (!hasAllowedKeys(value, validKeys)
     || !isNonEmptyString(value.id)
-    || !isSafeProjectRelativePath(value.sourcePath)
+    || !isSafeMediaSourcePath(value.sourcePath)
     || !isNonNegativeFiniteNumber(value.startSeconds)
     || !isPositiveFiniteNumber(value.durationSeconds)
     || !isNonNegativeFiniteNumber(value.offsetSeconds)
@@ -121,7 +121,7 @@ function validateTimelineSaveInput(input: unknown): { projectId: unknown; timeli
 function validateTimelineExportInput(input: unknown): TimelineExportInput {
   if (!hasExactKeys(input, ['projectId', 'outputPath', 'timeline'])
     || !isNonEmptyString(input.projectId)
-    || !isSafeProjectRelativePath(input.outputPath)) {
+    || !isSafeExportOutputPath(input.outputPath)) {
     throw new Error('Invalid timeline export input');
   }
 
@@ -136,6 +136,17 @@ function isSafeProjectRelativePath(value: unknown): value is string {
     && !path.win32.isAbsolute(value)
     && !/^[a-z][a-z0-9+.-]*:/i.test(value)
     && value.split('/').every((segment) => segment.length > 0 && segment !== '.' && segment !== '..');
+}
+
+function isSafeMediaSourcePath(value: unknown): value is string {
+  return isSafeProjectRelativePath(value) && value.startsWith('media/');
+}
+
+function isSafeExportOutputPath(value: unknown): value is string {
+  return isSafeProjectRelativePath(value)
+    && value.startsWith('exports/')
+    && path.posix.extname(value).toLowerCase() === '.mp4'
+    && !value.endsWith('/');
 }
 
 function hasExactKeys(value: unknown, keys: readonly string[]): value is Record<string, unknown> {

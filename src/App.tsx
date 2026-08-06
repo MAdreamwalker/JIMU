@@ -6,6 +6,7 @@ import { StoryboardWizard } from './pages/StoryboardWizard';
 import { SettingsCenter } from './pages/SettingsCenter';
 import { DirectorWorkspace } from './pages/DirectorWorkspace';
 import { TimelineEditor } from './pages/TimelineEditor';
+import { TaskCenter } from './pages/TaskCenter';
 import { getHashPath, matchRoute } from './routes';
 
 export function App() {
@@ -27,6 +28,8 @@ export function App() {
     ? <ProjectCenter />
     : route.path === '/settings'
       ? <SettingsCenter />
+    : route.path === '/tasks'
+      ? <TaskCenter />
     : canvasMatch
       ? <CreationCanvas projectId={canvasMatch[1]} />
       : storyboardMatch

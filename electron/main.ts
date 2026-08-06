@@ -8,6 +8,7 @@ import { registerPromptSkillHandlers } from './ipc/registerPromptSkillHandlers.j
 import { registerTimelineHandlers } from './ipc/registerTimelineHandlers.js';
 import { registerMediaHandlers } from './ipc/registerMediaHandlers.js';
 import { registerProjectPackageHandlers } from './ipc/registerProjectPackageHandlers.js';
+import { registerTaskHandlers } from './ipc/registerTaskHandlers.js';
 import { createConfigStore } from './services/configStore.js';
 import { createCryptoStore } from './services/cryptoStore.js';
 
@@ -45,6 +46,7 @@ app.whenReady().then(async () => {
   registerTimelineHandlers(projectsPath);
   registerMediaHandlers(projectsPath);
   registerProjectPackageHandlers();
+  registerTaskHandlers(projectsPath);
   await createWindow();
 });
 

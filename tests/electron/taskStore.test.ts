@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { appendTask } from '../../electron/services/taskStore';
+import { appendTask, listTasks } from '../../electron/services/taskStore';
 
 describe('task store', () => {
   it('redacts named JSON secrets and bearer tokens before writing task records', async () => {
@@ -53,6 +53,16 @@ describe('task store', () => {
     await fs.mkdir(dir);
 
     await expect(appendTask(dir, createTask(), root)).resolves.toMatchObject({ id: 'task_123' });
+  });
+
+  it('rejects corrupt task documents before appending', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-task-root-'));
+    const dir = path.join(root, 'project');
+    await fs.mkdir(dir);
+    await fs.writeFile(path.join(dir, 'tasks.json'), JSON.stringify({ tasks: [{ id: 'bad' }] }), 'utf8');
+
+    await expect(appendTask(dir, createTask(), root)).rejects.toThrow('Invalid task document');
+    await expect(listTasks(dir, root)).rejects.toThrow('Invalid task document');
   });
 });
 

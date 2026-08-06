@@ -8,6 +8,7 @@ import type { MediaAnalysis } from './services/mediaAnalysis.js';
 import type { TimelineExportProgress } from './services/timelineExport.js';
 import type { AppConfig } from './services/configStore.js';
 import type { SkillDefinition } from './ipc/registerPromptSkillHandlers.js';
+import type { TaskListItem } from './ipc/registerTaskHandlers.js';
 
 contextBridge.exposeInMainWorld('threecut', {
   app: {
@@ -71,6 +72,9 @@ contextBridge.exposeInMainWorld('threecut', {
   skills: {
     list: () => ipcRenderer.invoke('skills:list') as Promise<SkillDefinition[]>,
     save: (skills: SkillDefinition[]) => ipcRenderer.invoke('skills:save', skills) as Promise<void>,
+  },
+  tasks: {
+    list: () => ipcRenderer.invoke('tasks:list') as Promise<TaskListItem[]>,
   },
   projectPackage: {
     export: (projectId: string, destinationPath: string) => (
