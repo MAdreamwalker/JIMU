@@ -13,6 +13,7 @@ export interface ProjectStore {
   /** Rejects when a registry entry references a missing or corrupt project file. */
   listProjects(): Promise<ProjectMetadata[]>;
   readProject(projectId: string): Promise<ProjectMetadata>;
+  getProjectDirectory(projectId: string): Promise<string>;
 }
 
 const requiredDirs = [
@@ -104,6 +105,15 @@ export function createProjectStore(rootPath: string): ProjectStore {
       }
 
       return readProjectEntry(entry);
+    },
+    async getProjectDirectory(projectId) {
+      const registry = await readRegistry();
+      const entry = registry.find((item) => item.id === projectId);
+      if (!entry) {
+        throw new Error('Project not found');
+      }
+
+      return safePath(projectPath(entry.folder));
     },
   };
 }

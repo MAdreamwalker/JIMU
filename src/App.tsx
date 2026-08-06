@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Layout } from './components/Layout';
 import { ProjectCenter } from './pages/ProjectCenter';
+import { StoryboardWizard } from './pages/StoryboardWizard';
 import { getHashPath, matchRoute } from './routes';
 
 export function App() {
@@ -14,7 +15,12 @@ export function App() {
   }, []);
 
   const route = matchRoute(path);
-  const content = route.path === '/' ? <ProjectCenter /> : <h1>{route.title}</h1>;
+  const storyboardMatch = /^\/project\/([^/]+)\/storyboard$/.exec(path);
+  const content = route.path === '/'
+    ? <ProjectCenter />
+    : storyboardMatch
+      ? <StoryboardWizard projectId={storyboardMatch[1]} />
+      : <h1>{route.title}</h1>;
 
   return (
     <Layout>

@@ -4,7 +4,10 @@ import { App } from '../../src/App';
 
 describe('App', () => {
   beforeEach(() => {
-    vi.stubGlobal('threecut', { registry: { list: vi.fn().mockResolvedValue([]) } });
+    vi.stubGlobal('threecut', {
+      registry: { list: vi.fn().mockResolvedValue([]) },
+      pipeline: { load: vi.fn().mockResolvedValue({ stages: {} }), save: vi.fn() },
+    });
   });
 
   afterEach(() => {
