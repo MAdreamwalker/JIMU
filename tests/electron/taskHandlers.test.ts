@@ -32,6 +32,13 @@ describe('task IPC handlers', () => {
       { id: 'task_new', projectId: second.id, projectName: 'Second Project' },
       { id: 'task_old', projectId: first.id, projectName: 'First Project' },
     ]);
+
+    await expect(handlers.get('tasks:retry')!({}, { projectId: second.id, taskId: 'task_new' }))
+      .resolves.toMatchObject({ id: 'task_new', status: 'queued', projectId: second.id });
+    await expect(handlers.get('tasks:cancel')!({}, { projectId: second.id, taskId: 'task_new' }))
+      .resolves.toMatchObject({ id: 'task_new', status: 'cancelled', projectId: second.id });
+    await expect(handlers.get('tasks:retry')!({}, { projectId: second.id, taskId: '' }))
+      .rejects.toThrow('Invalid task action input');
   });
 });
 

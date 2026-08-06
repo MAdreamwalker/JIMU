@@ -75,6 +75,12 @@ contextBridge.exposeInMainWorld('threecut', {
   },
   tasks: {
     list: () => ipcRenderer.invoke('tasks:list') as Promise<TaskListItem[]>,
+    retry: (projectId: string, taskId: string) => (
+      ipcRenderer.invoke('tasks:retry', { projectId, taskId }) as Promise<TaskListItem | null>
+    ),
+    cancel: (projectId: string, taskId: string) => (
+      ipcRenderer.invoke('tasks:cancel', { projectId, taskId }) as Promise<TaskListItem | null>
+    ),
   },
   projectPackage: {
     export: (projectId: string, destinationPath: string) => (

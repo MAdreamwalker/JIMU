@@ -59,6 +59,30 @@ export async function listTasks(projectDir: string, allowedRoot = projectDir): P
   }
 }
 
+export async function updateTaskStatus(
+  projectDir: string,
+  taskId: string,
+  status: TaskRecord['status'],
+  allowedRoot = projectDir,
+): Promise<TaskRecord | null> {
+  if (!isNonEmptyString(taskId) || !taskStatuses.includes(status)) throw new Error('Invalid task update');
+  const safeProjectDir = await assertRealPathInsideAllowedRoots(projectDir, [allowedRoot]);
+  const filePath = await assertRealPathInsideAllowedRoots(path.join(safeProjectDir, 'tasks.json'), [safeProjectDir]);
+  const document = validateTaskDocument(JSON.parse(await fs.readFile(filePath, 'utf8')) as unknown);
+  const task = document.tasks.find((item) => item.id === taskId);
+  if (!task) return null;
+
+  const updatedTask: TaskRecord = {
+    ...task,
+    status,
+    ...(status === 'queued' || status === 'cancelled' ? { errorCategory: undefined } : {}),
+    updatedAt: new Date().toISOString(),
+  };
+  document.tasks = document.tasks.map((item) => (item.id === taskId ? updatedTask : item));
+  await fs.writeFile(filePath, JSON.stringify(document, null, 2), 'utf8');
+  return updatedTask;
+}
+
 function validateTaskDocument(value: unknown): TaskDocument {
   if (!hasExactKeys(value, ['tasks']) || !Array.isArray(value.tasks)) {
     throw new Error('Invalid task document');

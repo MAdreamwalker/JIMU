@@ -58,6 +58,8 @@ declare global {
       };
       tasks: {
         list: () => Promise<TaskListItem[]>;
+        retry: (projectId: string, taskId: string) => Promise<TaskListItem | null>;
+        cancel: (projectId: string, taskId: string) => Promise<TaskListItem | null>;
       };
       projectPackage: {
         export: (projectId: string, destinationPath: string) => Promise<string>;

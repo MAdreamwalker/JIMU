@@ -19,7 +19,7 @@ describe('App', () => {
       config: { getAll: vi.fn().mockResolvedValue({ providers: [] }), save: vi.fn() },
       storyboardPrompts: { read: vi.fn().mockResolvedValue({}), save: vi.fn() },
       skills: { list: vi.fn().mockResolvedValue([]), save: vi.fn() },
-      tasks: { list: vi.fn().mockResolvedValue([]) },
+      tasks: { list: vi.fn().mockResolvedValue([]), retry: vi.fn(), cancel: vi.fn() },
     });
   });
 
@@ -68,5 +68,74 @@ describe('App', () => {
     render(<App />);
 
     expect(await screen.findByRole('status')).toHaveTextContent('No tasks');
+  });
+
+  it('allows task retry and cancellation through the task center', async () => {
+    const retry = vi.fn().mockResolvedValue({
+      id: 'task_failed',
+      projectId: 'proj_1',
+      projectName: 'Demo',
+      category: 'pipeline',
+      status: 'queued',
+      providerId: 'mock',
+      inputSummary: 'input',
+      outputSummary: 'output',
+      updatedAt: '2026-08-06T01:00:00.000Z',
+      createdAt: '2026-08-06T00:00:00.000Z',
+    });
+    const cancel = vi.fn().mockResolvedValue({
+      id: 'task_running',
+      projectId: 'proj_1',
+      projectName: 'Demo',
+      category: 'export',
+      status: 'cancelled',
+      providerId: 'mock',
+      inputSummary: 'input',
+      outputSummary: 'output',
+      updatedAt: '2026-08-06T01:00:00.000Z',
+      createdAt: '2026-08-06T00:00:00.000Z',
+    });
+    vi.stubGlobal('threecut', {
+      ...(window.threecut as any),
+      tasks: {
+        list: vi.fn().mockResolvedValue([
+          {
+            id: 'task_failed',
+            projectId: 'proj_1',
+            projectName: 'Demo',
+            category: 'pipeline',
+            status: 'failed',
+            providerId: 'mock',
+            inputSummary: 'input',
+            outputSummary: 'output',
+            errorCategory: 'provider',
+            updatedAt: '2026-08-06T00:00:00.000Z',
+            createdAt: '2026-08-06T00:00:00.000Z',
+          },
+          {
+            id: 'task_running',
+            projectId: 'proj_1',
+            projectName: 'Demo',
+            category: 'export',
+            status: 'running',
+            providerId: 'mock',
+            inputSummary: 'input',
+            outputSummary: 'output',
+            updatedAt: '2026-08-06T00:00:00.000Z',
+            createdAt: '2026-08-06T00:00:00.000Z',
+          },
+        ]),
+        retry,
+        cancel,
+      },
+    });
+    window.location.hash = '#/tasks';
+    render(<App />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Retry task_failed' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Cancel task_running' }));
+
+    expect(retry).toHaveBeenCalledWith('proj_1', 'task_failed');
+    expect(cancel).toHaveBeenCalledWith('proj_1', 'task_running');
   });
 });

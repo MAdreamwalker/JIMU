@@ -24,6 +24,25 @@ export function TaskCenter() {
     };
   }, []);
 
+  const replaceTask = (updatedTask: TaskListItem | null) => {
+    if (!updatedTask) return;
+    setTasks((currentTasks) => currentTasks.map((task) => (
+      task.projectId === updatedTask.projectId && task.id === updatedTask.id ? updatedTask : task
+    )));
+  };
+
+  const retryTask = (task: TaskListItem) => {
+    void window.threecut.tasks.retry(task.projectId, task.id).then(replaceTask).catch((error: unknown) => {
+      setLoadError(error instanceof Error ? error.message : 'Unable to retry task');
+    });
+  };
+
+  const cancelTask = (task: TaskListItem) => {
+    void window.threecut.tasks.cancel(task.projectId, task.id).then(replaceTask).catch((error: unknown) => {
+      setLoadError(error instanceof Error ? error.message : 'Unable to cancel task');
+    });
+  };
+
   const counts = statusOrder.map((status) => ({
     status,
     count: tasks.filter((task) => task.status === status).length,
@@ -54,10 +73,20 @@ export function TaskCenter() {
                 {task.errorCategory ? <p role="alert">{task.errorCategory}</p> : null}
                 <p>{task.inputSummary}</p>
                 <p>{task.outputSummary}</p>
-                <button type="button" aria-label={`Retry ${task.id}`} disabled>
+                <button
+                  type="button"
+                  aria-label={`Retry ${task.id}`}
+                  disabled={task.status !== 'failed' && task.status !== 'cancelled'}
+                  onClick={() => retryTask(task)}
+                >
                   <RotateCcw size={16} aria-hidden="true" />
                 </button>
-                <button type="button" aria-label={`Cancel ${task.id}`} disabled>
+                <button
+                  type="button"
+                  aria-label={`Cancel ${task.id}`}
+                  disabled={task.status !== 'queued' && task.status !== 'running'}
+                  onClick={() => cancelTask(task)}
+                >
                   <Square size={16} aria-hidden="true" />
                 </button>
               </article>

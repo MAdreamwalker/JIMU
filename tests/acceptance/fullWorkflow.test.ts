@@ -1,7 +1,14 @@
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
+import { registerTaskHandlers } from '../../electron/ipc/registerTaskHandlers';
+import { createProjectStore } from '../../electron/services/projectStore';
+import { appendTask } from '../../electron/services/taskStore';
 import { matchRoute, routes } from '../../src/routes';
 
 const exposed = vi.hoisted(() => ({ api: null as any }));
+const ipcMainHandlers = vi.hoisted(() => new Map<string, (...args: any[]) => unknown>());
 const ipcRenderer = vi.hoisted(() => ({
   invoke: vi.fn().mockResolvedValue(undefined),
   on: vi.fn(),
@@ -12,6 +19,11 @@ vi.mock('electron', () => ({
   contextBridge: {
     exposeInMainWorld: (_name: string, api: unknown) => {
       exposed.api = api;
+    },
+  },
+  ipcMain: {
+    handle: (channel: string, handler: (...args: any[]) => unknown) => {
+      ipcMainHandlers.set(channel, handler);
     },
   },
   ipcRenderer,
@@ -67,6 +79,8 @@ describe('full workflow contracts', () => {
     await api.storyboardPrompts.read();
     await api.skills.list();
     await api.tasks.list();
+    await api.tasks.retry('demo', 'task_1');
+    await api.tasks.cancel('demo', 'task_1');
     await api.projectPackage.export('demo', 'exports/demo.3cut');
     await api.projectPackage.import('exports/demo.3cut');
 
@@ -80,8 +94,40 @@ describe('full workflow contracts', () => {
       'storyboardPrompts:read',
       'skills:list',
       'tasks:list',
+      'tasks:retry',
+      'tasks:cancel',
       'project:export',
       'project:import',
     ]);
+  });
+
+  it('exercises task workflow handlers against project storage', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-acceptance-root-'));
+    const store = createProjectStore(root);
+    const project = await store.createProject({ name: 'Acceptance Project', aspectRatio: '16:9' });
+    await appendTask(await store.getProjectDirectory(project.id), {
+      id: 'task_acceptance',
+      category: 'pipeline',
+      status: 'failed',
+      providerId: 'mock',
+      inputSummary: 'source prose',
+      outputSummary: 'storyboard failed',
+      errorCategory: 'provider',
+      createdAt: '2026-08-06T00:00:00.000Z',
+      updatedAt: '2026-08-06T00:00:00.000Z',
+    }, root);
+    registerTaskHandlers(root);
+
+    await expect(ipcMainHandlers.get('tasks:list')!({})).resolves.toMatchObject([
+      { id: 'task_acceptance', projectId: project.id, status: 'failed' },
+    ]);
+    await expect(ipcMainHandlers.get('tasks:retry')!({}, {
+      projectId: project.id,
+      taskId: 'task_acceptance',
+    })).resolves.toMatchObject({ id: 'task_acceptance', status: 'queued' });
+    await expect(ipcMainHandlers.get('tasks:cancel')!({}, {
+      projectId: project.id,
+      taskId: 'task_acceptance',
+    })).resolves.toMatchObject({ id: 'task_acceptance', status: 'cancelled' });
   });
 });
