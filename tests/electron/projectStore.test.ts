@@ -81,4 +81,28 @@ describe('project store', () => {
 
     await expect(store.readProject('outside')).rejects.toThrow('Path resolves outside authorized roots');
   });
+
+  it('rejects a pipeline file link that resolves outside the project directory', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-projects-'));
+    const outside = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-outside-'));
+    const store = createProjectStore(root);
+    const project = await store.createProject({ name: 'Safe Project', aspectRatio: '16:9' });
+    const pipelinePath = path.join(root, 'Safe Project', 'pipeline.json');
+    const outsidePipeline = path.join(outside, 'pipeline.json');
+    await fs.writeFile(outsidePipeline, JSON.stringify({ stages: {} }), 'utf8');
+    await fs.unlink(pipelinePath);
+
+    try {
+      await fs.symlink(outsidePipeline, pipelinePath, 'file');
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code === 'EPERM' || code === 'EACCES') {
+        return;
+      }
+      throw error;
+    }
+
+    await expect(store.getProjectFilePath(project.id, 'pipeline.json'))
+      .rejects.toThrow('Path resolves outside authorized roots');
+  });
 });

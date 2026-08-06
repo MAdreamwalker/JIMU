@@ -14,6 +14,7 @@ export interface ProjectStore {
   listProjects(): Promise<ProjectMetadata[]>;
   readProject(projectId: string): Promise<ProjectMetadata>;
   getProjectDirectory(projectId: string): Promise<string>;
+  getProjectFilePath(projectId: string, fileName: string): Promise<string>;
 }
 
 const requiredDirs = [
@@ -66,6 +67,16 @@ export function createProjectStore(rootPath: string): ProjectStore {
     return JSON.parse(await fs.readFile(projectFile, 'utf8')) as ProjectMetadata;
   }
 
+  async function getProjectDirectory(projectId: string): Promise<string> {
+    const registry = await readRegistry();
+    const entry = registry.find((item) => item.id === projectId);
+    if (!entry) {
+      throw new Error('Project not found');
+    }
+
+    return safePath(projectPath(entry.folder));
+  }
+
   return {
     async createProject(input) {
       assertSafeProjectName(input.name);
@@ -107,13 +118,15 @@ export function createProjectStore(rootPath: string): ProjectStore {
       return readProjectEntry(entry);
     },
     async getProjectDirectory(projectId) {
-      const registry = await readRegistry();
-      const entry = registry.find((item) => item.id === projectId);
-      if (!entry) {
-        throw new Error('Project not found');
+      return getProjectDirectory(projectId);
+    },
+    async getProjectFilePath(projectId, fileName) {
+      if (fileName !== path.basename(fileName) || fileName === '.' || fileName === '..') {
+        throw new Error('Invalid project file name');
       }
 
-      return safePath(projectPath(entry.folder));
+      const projectDir = await getProjectDirectory(projectId);
+      return assertRealPathInsideAllowedRoots(path.join(projectDir, fileName), [projectDir]);
     },
   };
 }
