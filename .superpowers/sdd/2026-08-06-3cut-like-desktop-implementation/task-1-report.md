@@ -64,6 +64,6 @@ Commands run:
 - `pnpm build`: passed; Vite produced the renderer bundle.
 - `git diff --check`: passed.
 
-Cleanup commit: `a34a2b8` - `chore: clean up scaffold artifacts`.
+Cleanup commit: `32877d8` - `chore: clean up scaffold artifacts`.
 
 Remaining concerns: Electron launch/packaging remains unexercised; pnpm emitted the existing dependency deprecation warning for `@testing-library/jest-dom`.
