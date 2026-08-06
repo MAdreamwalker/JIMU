@@ -106,7 +106,10 @@ function isSafeExternalPackageFilePath(value: unknown): value is string {
   if (
     isDriveRelative
     || (!isAbsolute && /^[a-z][a-z0-9+.-]*:/i.test(value))
-    || normalized.split('/').some((segment) => segment === '.' || segment === '..')
+    || normalized.split('/').some((segment) => {
+      if (!segment) return false;
+      return segment === '.' || segment === '..' || /[ .]$/.test(segment);
+    })
   ) {
     return false;
   }

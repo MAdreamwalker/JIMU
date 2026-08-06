@@ -101,7 +101,8 @@ describe('project package safety', () => {
 
   it('rejects unsafe package file paths before shell behavior', async () => {
     const unsafePaths = ['', '  Demo.3cut', 'Demo.3cut  ', '../Demo.3cut', '..\\Demo.3cut',
-      'C:\\tmp\\..\\Demo.3cut', 'C:Demo.3cut', 'Demo.3cut\u0000', 'C:\\tmp\\Demo.zip'];
+      'C:\\tmp\\..\\Demo.3cut', 'C:\\tmp. \\Demo.3cut', 'C:\\tmp.\\Demo.3cut',
+      'C:Demo.3cut', 'Demo.3cut\u0000', 'C:\\tmp\\Demo.zip'];
 
     for (const packagePath of unsafePaths) {
       await expect(exportProjectPackage('proj_1', packagePath)).rejects.toThrow('Invalid package file path');
@@ -137,6 +138,8 @@ describe('project package IPC handlers', () => {
     const destinationPath = 'C:\\Users\\Me\\Desktop\\Demo.3cut';
     await expect(handlers.get('project:export')!({}, { projectId: 'proj_1', destinationPath }))
       .resolves.toBe(destinationPath);
+    await expect(handlers.get('project:import')!({}, { packagePath: destinationPath }))
+      .rejects.toThrow('not implemented');
   });
 
   it('rejects malformed IPC payloads', async () => {
