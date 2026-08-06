@@ -63,6 +63,7 @@ export async function updateTaskStatus(
   projectDir: string,
   taskId: string,
   status: TaskRecord['status'],
+  allowedCurrentStatuses: readonly TaskRecord['status'][],
   allowedRoot = projectDir,
 ): Promise<TaskRecord | null> {
   if (!isNonEmptyString(taskId) || !taskStatuses.includes(status)) throw new Error('Invalid task update');
@@ -71,6 +72,9 @@ export async function updateTaskStatus(
   const document = validateTaskDocument(JSON.parse(await fs.readFile(filePath, 'utf8')) as unknown);
   const task = document.tasks.find((item) => item.id === taskId);
   if (!task) return null;
+  if (!allowedCurrentStatuses.includes(task.status)) {
+    throw new Error('Invalid task state transition');
+  }
 
   const updatedTask: TaskRecord = {
     ...task,

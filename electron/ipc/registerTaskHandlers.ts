@@ -28,22 +28,23 @@ export function registerTaskHandlers(rootPath: string): void {
 
   ipcMain.handle('tasks:retry', async (_event, input: unknown): Promise<TaskListItem | null> => {
     const { projectId, taskId } = validateTaskActionInput(input);
-    return updateProjectTask(projectId, taskId, 'queued');
+    return updateProjectTask(projectId, taskId, 'queued', ['failed', 'cancelled']);
   });
 
   ipcMain.handle('tasks:cancel', async (_event, input: unknown): Promise<TaskListItem | null> => {
     const { projectId, taskId } = validateTaskActionInput(input);
-    return updateProjectTask(projectId, taskId, 'cancelled');
+    return updateProjectTask(projectId, taskId, 'cancelled', ['queued', 'running']);
   });
 
   async function updateProjectTask(
     projectId: string,
     taskId: string,
     status: TaskRecord['status'],
+    allowedCurrentStatuses: readonly TaskRecord['status'][],
   ): Promise<TaskListItem | null> {
     const project = await projectStore.readProject(projectId);
     const projectDirectory = await projectStore.getProjectDirectory(projectId);
-    const task = await updateTaskStatus(projectDirectory, taskId, status, rootPath);
+    const task = await updateTaskStatus(projectDirectory, taskId, status, allowedCurrentStatuses, rootPath);
     return task ? { ...task, projectId: project.id, projectName: project.name } : null;
   }
 }
