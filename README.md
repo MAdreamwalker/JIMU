@@ -38,11 +38,19 @@ successful build. For renderer development, use the Vite URL printed by
 
 ## Workflow
 
-Create a project, import source text, run storyboard stages, confirm assets,
-generate images and videos, assemble timeline media, and export an MP4 job.
-The project center, canvas, storyboard, director, and timeline views are
-available from the project workflow, while provider credentials, storyboard
-prompts, and skills are managed in Settings.
+The current app provides the desktop shell for this workflow: create a
+project, inspect the canvas, storyboard, director, and timeline views, persist
+their project documents, and queue an MP4 export job with progress/cancellation
+contracts. The storyboard stages and Settings surfaces expose the shape of the
+prose-to-MP4 flow, but they are not a complete provider-backed generation
+engine.
+
+Provider credentials, media analysis, image/video generation, and related
+asset confirmation are validation or shell paths in this package. Configure
+local providers in Settings before exercising those paths; no external model
+service is bundled here. Project archive export validates its destination
+contract, while archive import is currently a validation path and does not yet
+restore a project.
 
 ## Packaging Notes
 
