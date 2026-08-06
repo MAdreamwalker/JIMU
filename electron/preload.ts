@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { PipelineDocument } from '../src/domain/pipeline.js';
+import type { CanvasDocument } from '../src/domain/canvas.js';
 import type { ProjectAspectRatio, ProjectMetadata } from '../src/domain/project.js';
 
 contextBridge.exposeInMainWorld('threecut', {
@@ -17,6 +18,12 @@ contextBridge.exposeInMainWorld('threecut', {
     load: (projectId: string) => ipcRenderer.invoke('pipeline:load', projectId) as Promise<PipelineDocument>,
     save: (projectId: string, pipeline: PipelineDocument) => (
       ipcRenderer.invoke('pipeline:save', projectId, pipeline) as Promise<void>
+    ),
+  },
+  canvas: {
+    load: (projectId: string) => ipcRenderer.invoke('canvas:load', projectId) as Promise<CanvasDocument>,
+    save: (projectId: string, canvas: CanvasDocument) => (
+      ipcRenderer.invoke('canvas:save', { projectId, canvas }) as Promise<void>
     ),
   },
 });

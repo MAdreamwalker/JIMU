@@ -7,6 +7,7 @@ describe('App', () => {
     vi.stubGlobal('threecut', {
       registry: { list: vi.fn().mockResolvedValue([]) },
       pipeline: { load: vi.fn().mockResolvedValue({ stages: {} }), save: vi.fn() },
+      canvas: { load: vi.fn().mockResolvedValue({ assets: [], cards: [] }), save: vi.fn() },
     });
   });
 
@@ -27,7 +28,7 @@ describe('App', () => {
 
   it.each([
     ['/', '项目中心'],
-    ['/project/demo/canvas', 'Canvas'],
+    ['/project/demo/canvas', '鍒涗綔鐢诲竷'],
     ['/project/demo/storyboard', 'Storyboard'],
     ['/project/demo/director', 'Director'],
     ['/project/demo/timeline', 'Timeline'],

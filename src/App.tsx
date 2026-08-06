@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Layout } from './components/Layout';
 import { ProjectCenter } from './pages/ProjectCenter';
+import { CreationCanvas } from './pages/CreationCanvas';
 import { StoryboardWizard } from './pages/StoryboardWizard';
 import { getHashPath, matchRoute } from './routes';
 
@@ -16,9 +17,12 @@ export function App() {
 
   const route = matchRoute(path);
   const storyboardMatch = /^\/project\/([^/]+)\/storyboard$/.exec(path);
+  const canvasMatch = /^\/project\/([^/]+)\/canvas$/.exec(path);
   const content = route.path === '/'
     ? <ProjectCenter />
-    : storyboardMatch
+    : canvasMatch
+      ? <CreationCanvas projectId={canvasMatch[1]} />
+      : storyboardMatch
       ? <StoryboardWizard projectId={storyboardMatch[1]} />
       : <h1>{route.title}</h1>;
 
