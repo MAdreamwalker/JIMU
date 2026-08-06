@@ -1,18 +1,19 @@
 import { ipcMain } from 'electron';
-import type { ProjectAspectRatio } from '../../src/domain/project.js';
 import { createProjectStore } from '../services/projectStore.js';
+import { validateCreateProjectInput } from './projectInput.js';
 
 export function registerProjectHandlers(rootPath: string): void {
   const store = createProjectStore(rootPath);
 
   ipcMain.handle(
     'registry:create',
-    (_event, input: { name: string; aspectRatio: ProjectAspectRatio }) => {
-      if (!input.name.trim()) {
+    (_event, input: unknown) => {
+      const projectInput = validateCreateProjectInput(input);
+      if (!projectInput.name.trim()) {
         throw new Error('Project name is required');
       }
 
-      return store.createProject(input);
+      return store.createProject(projectInput);
     },
   );
 
