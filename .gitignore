@@ -1,2 +1,4 @@
 .inspect_3cut/
 .worktrees/
+node_modules/
+dist/
