@@ -5,6 +5,8 @@ import { registerPipelineHandlers } from './ipc/registerPipelineHandlers.js';
 import { registerProjectHandlers } from './ipc/registerProjectHandlers.js';
 import { registerConfigHandlers } from './ipc/registerConfigHandlers.js';
 import { registerPromptSkillHandlers } from './ipc/registerPromptSkillHandlers.js';
+import { registerTimelineHandlers } from './ipc/registerTimelineHandlers.js';
+import { registerMediaHandlers } from './ipc/registerMediaHandlers.js';
 import { createConfigStore } from './services/configStore.js';
 import { createCryptoStore } from './services/cryptoStore.js';
 
@@ -39,6 +41,8 @@ app.whenReady().then(async () => {
     storyboardPromptsPath: path.join(userDataPath, 'storyboard-prompts.json'),
     skillsPath: path.join(userDataPath, 'skills.json'),
   });
+  registerTimelineHandlers(projectsPath);
+  registerMediaHandlers();
   await createWindow();
 });
 

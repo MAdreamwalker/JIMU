@@ -2,6 +2,8 @@ import type { ProjectAspectRatio, ProjectMetadata } from './domain/project';
 import type { PipelineDocument } from './domain/pipeline';
 import type { CanvasDocument } from './domain/canvas';
 import type { DirectorDocument } from './domain/director';
+import type { TimelineDocument, TimelineExportInput } from './domain/timeline';
+import type { MediaAnalysis } from '../electron/services/mediaAnalysis';
 import type { AppConfig } from '../electron/services/configStore';
 import type { SkillDefinition } from '../electron/ipc/registerPromptSkillHandlers';
 
@@ -29,6 +31,15 @@ declare global {
       director: {
         load: (projectId: string) => Promise<DirectorDocument>;
         save: (projectId: string, director: DirectorDocument) => Promise<void>;
+      };
+      timeline: {
+        load: (projectId: string) => Promise<TimelineDocument>;
+        save: (projectId: string, timeline: TimelineDocument) => Promise<void>;
+        exportMp4: (input: TimelineExportInput) => Promise<{ jobId: string }>;
+        cancelExport: (jobId: string) => Promise<boolean>;
+      };
+      media: {
+        analyze: (filePath: string) => Promise<MediaAnalysis>;
       };
       config: {
         getAll: () => Promise<AppConfig>;

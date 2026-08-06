@@ -3,6 +3,7 @@ import type { PipelineDocument } from '../src/domain/pipeline.js';
 import type { CanvasDocument } from '../src/domain/canvas.js';
 import type { DirectorDocument } from '../src/domain/director.js';
 import type { ProjectAspectRatio, ProjectMetadata } from '../src/domain/project.js';
+import type { TimelineDocument, TimelineExportInput } from '../src/domain/timeline.js';
 import type { AppConfig } from './services/configStore.js';
 import type { SkillDefinition } from './ipc/registerPromptSkillHandlers.js';
 
@@ -34,6 +35,19 @@ contextBridge.exposeInMainWorld('threecut', {
     save: (projectId: string, director: DirectorDocument) => (
       ipcRenderer.invoke('director:save', { projectId, director }) as Promise<void>
     ),
+  },
+  timeline: {
+    load: (projectId: string) => ipcRenderer.invoke('timeline:load', projectId) as Promise<TimelineDocument>,
+    save: (projectId: string, timeline: TimelineDocument) => (
+      ipcRenderer.invoke('timeline:save', { projectId, timeline }) as Promise<void>
+    ),
+    exportMp4: (input: TimelineExportInput) => (
+      ipcRenderer.invoke('timeline:exportMp4', input) as Promise<{ jobId: string }>
+    ),
+    cancelExport: (jobId: string) => ipcRenderer.invoke('timeline:cancelExport', jobId) as Promise<boolean>,
+  },
+  media: {
+    analyze: (filePath: string) => ipcRenderer.invoke('media:analyze', filePath),
   },
   config: {
     getAll: () => ipcRenderer.invoke('config:getAll') as Promise<AppConfig>,

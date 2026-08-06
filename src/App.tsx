@@ -5,6 +5,7 @@ import { CreationCanvas } from './pages/CreationCanvas';
 import { StoryboardWizard } from './pages/StoryboardWizard';
 import { SettingsCenter } from './pages/SettingsCenter';
 import { DirectorWorkspace } from './pages/DirectorWorkspace';
+import { TimelineEditor } from './pages/TimelineEditor';
 import { getHashPath, matchRoute } from './routes';
 
 export function App() {
@@ -21,6 +22,7 @@ export function App() {
   const storyboardMatch = /^\/project\/([^/]+)\/storyboard$/.exec(path);
   const canvasMatch = /^\/project\/([^/]+)\/canvas$/.exec(path);
   const directorMatch = /^\/project\/([^/]+)\/director$/.exec(path);
+  const timelineMatch = /^\/project\/([^/]+)\/timeline$/.exec(path);
   const content = route.path === '/'
     ? <ProjectCenter />
     : route.path === '/settings'
@@ -31,6 +33,8 @@ export function App() {
       ? <StoryboardWizard projectId={storyboardMatch[1]} />
       : directorMatch
       ? <DirectorWorkspace projectId={directorMatch[1]} />
+      : timelineMatch
+      ? <TimelineEditor projectId={timelineMatch[1]} />
       : <h1>{route.title}</h1>;
 
   return (

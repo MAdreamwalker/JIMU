@@ -9,6 +9,12 @@ describe('App', () => {
       pipeline: { load: vi.fn().mockResolvedValue({ stages: {} }), save: vi.fn() },
       canvas: { load: vi.fn().mockResolvedValue({ assets: [], cards: [] }), save: vi.fn() },
       director: { load: vi.fn().mockResolvedValue({ objects: [], snapshots: [] }), save: vi.fn() },
+      timeline: {
+        load: vi.fn().mockResolvedValue({ durationSeconds: 0, tracks: [] }),
+        save: vi.fn(),
+        exportMp4: vi.fn(),
+        cancelExport: vi.fn(),
+      },
       config: { getAll: vi.fn().mockResolvedValue({ providers: [] }), save: vi.fn() },
       storyboardPrompts: { read: vi.fn().mockResolvedValue({}), save: vi.fn() },
       skills: { list: vi.fn().mockResolvedValue([]), save: vi.fn() },
@@ -35,7 +41,7 @@ describe('App', () => {
     ['/project/demo/canvas', '鍒涗綔鐢诲竷'],
     ['/project/demo/storyboard', 'Storyboard'],
     ['/project/demo/director', 'Director'],
-    ['/project/demo/timeline', 'Timeline'],
+    ['/project/demo/timeline', '\u526a\u8f91\u65f6\u95f4\u7ebf'],
     ['/tasks', 'Tasks'],
     ['/settings', '设置'],
   ])('renders the page for %s', (path, title) => {
