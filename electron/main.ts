@@ -3,6 +3,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { registerPipelineHandlers } from './ipc/registerPipelineHandlers.js';
 import { registerProjectHandlers } from './ipc/registerProjectHandlers.js';
+import { registerConfigHandlers } from './ipc/registerConfigHandlers.js';
+import { registerPromptSkillHandlers } from './ipc/registerPromptSkillHandlers.js';
+import { createConfigStore } from './services/configStore.js';
+import { createCryptoStore } from './services/cryptoStore.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -25,9 +29,16 @@ async function createWindow() {
 }
 
 app.whenReady().then(async () => {
+  const userDataPath = app.getPath('userData');
   const projectsPath = path.join(app.getPath('userData'), 'projects');
+  const configStore = createConfigStore(path.join(userDataPath, '3cut-clone-config.json'), createCryptoStore());
   registerProjectHandlers(projectsPath);
   registerPipelineHandlers(projectsPath);
+  registerConfigHandlers(() => configStore.load(), (config) => configStore.save(config));
+  registerPromptSkillHandlers({
+    storyboardPromptsPath: path.join(userDataPath, 'storyboard-prompts.json'),
+    skillsPath: path.join(userDataPath, 'skills.json'),
+  });
   await createWindow();
 });
 

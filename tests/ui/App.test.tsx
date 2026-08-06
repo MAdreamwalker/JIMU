@@ -8,6 +8,9 @@ describe('App', () => {
       registry: { list: vi.fn().mockResolvedValue([]) },
       pipeline: { load: vi.fn().mockResolvedValue({ stages: {} }), save: vi.fn() },
       canvas: { load: vi.fn().mockResolvedValue({ assets: [], cards: [] }), save: vi.fn() },
+      config: { getAll: vi.fn().mockResolvedValue({ providers: [] }), save: vi.fn() },
+      storyboardPrompts: { read: vi.fn().mockResolvedValue({}), save: vi.fn() },
+      skills: { list: vi.fn().mockResolvedValue([]), save: vi.fn() },
     });
   });
 
@@ -33,7 +36,7 @@ describe('App', () => {
     ['/project/demo/director', 'Director'],
     ['/project/demo/timeline', 'Timeline'],
     ['/tasks', 'Tasks'],
-    ['/settings', 'Settings'],
+    ['/settings', '设置'],
   ])('renders the page for %s', (path, title) => {
     window.location.hash = `#${path}`;
 

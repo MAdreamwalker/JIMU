@@ -20,7 +20,9 @@ export const defaultConfig: AppConfig = {
 };
 
 export interface ConfigStore {
+  /** Decrypts persisted provider credentials before returning the renderer-safe config shape. */
   load(): Promise<AppConfig>;
+  /** Encrypts provider credentials before writing global configuration to disk. */
   save(config: AppConfig): Promise<void>;
 }
 

@@ -1,0 +1,28 @@
+import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { SettingsCenter } from '../../src/pages/SettingsCenter';
+
+describe('SettingsCenter', () => {
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+
+  it('shows provider and prompt sections after loading through the preload API', async () => {
+    const getAll = vi.fn().mockResolvedValue({ providers: [] });
+    const read = vi.fn().mockResolvedValue({ 'chapter-split': 'Split chapters' });
+    vi.stubGlobal('threecut', {
+      config: { getAll, save: vi.fn() },
+      storyboardPrompts: { read },
+      skills: { list: vi.fn().mockResolvedValue([]), save: vi.fn() },
+    });
+
+    render(<SettingsCenter />);
+
+    expect(await screen.findByText('模型设置')).toBeInTheDocument();
+    expect(screen.getByText('Prompt 管理')).toBeInTheDocument();
+    expect(screen.getByText('Skills 管理')).toBeInTheDocument();
+    expect(getAll).toHaveBeenCalledOnce();
+    expect(read).toHaveBeenCalledOnce();
+  });
+});

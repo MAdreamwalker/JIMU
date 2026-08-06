@@ -1,6 +1,8 @@
 import type { ProjectAspectRatio, ProjectMetadata } from './domain/project';
 import type { PipelineDocument } from './domain/pipeline';
 import type { CanvasDocument } from './domain/canvas';
+import type { AppConfig } from '../electron/services/configStore';
+import type { SkillDefinition } from '../electron/ipc/registerPromptSkillHandlers';
 
 export {};
 
@@ -22,6 +24,18 @@ declare global {
       canvas: {
         load: (projectId: string) => Promise<CanvasDocument>;
         save: (projectId: string, canvas: CanvasDocument) => Promise<void>;
+      };
+      config: {
+        getAll: () => Promise<AppConfig>;
+        save: (config: AppConfig) => Promise<void>;
+      };
+      storyboardPrompts: {
+        read: () => Promise<Record<string, string>>;
+        save: (prompts: Record<string, string>) => Promise<void>;
+      };
+      skills: {
+        list: () => Promise<SkillDefinition[]>;
+        save: (skills: SkillDefinition[]) => Promise<void>;
       };
     };
   }

@@ -2,6 +2,8 @@ import { contextBridge, ipcRenderer } from 'electron';
 import type { PipelineDocument } from '../src/domain/pipeline.js';
 import type { CanvasDocument } from '../src/domain/canvas.js';
 import type { ProjectAspectRatio, ProjectMetadata } from '../src/domain/project.js';
+import type { AppConfig } from './services/configStore.js';
+import type { SkillDefinition } from './ipc/registerPromptSkillHandlers.js';
 
 contextBridge.exposeInMainWorld('threecut', {
   app: {
@@ -25,5 +27,19 @@ contextBridge.exposeInMainWorld('threecut', {
     save: (projectId: string, canvas: CanvasDocument) => (
       ipcRenderer.invoke('canvas:save', { projectId, canvas }) as Promise<void>
     ),
+  },
+  config: {
+    getAll: () => ipcRenderer.invoke('config:getAll') as Promise<AppConfig>,
+    save: (config: AppConfig) => ipcRenderer.invoke('config:save', config) as Promise<void>,
+  },
+  storyboardPrompts: {
+    read: () => ipcRenderer.invoke('storyboardPrompts:read') as Promise<Record<string, string>>,
+    save: (prompts: Record<string, string>) => (
+      ipcRenderer.invoke('storyboardPrompts:save', prompts) as Promise<void>
+    ),
+  },
+  skills: {
+    list: () => ipcRenderer.invoke('skills:list') as Promise<SkillDefinition[]>,
+    save: (skills: SkillDefinition[]) => ipcRenderer.invoke('skills:save', skills) as Promise<void>,
   },
 });
