@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { PipelineDocument } from '../src/domain/pipeline.js';
 import type { CanvasDocument } from '../src/domain/canvas.js';
+import type { DirectorDocument } from '../src/domain/director.js';
 import type { ProjectAspectRatio, ProjectMetadata } from '../src/domain/project.js';
 import type { AppConfig } from './services/configStore.js';
 import type { SkillDefinition } from './ipc/registerPromptSkillHandlers.js';
@@ -26,6 +27,12 @@ contextBridge.exposeInMainWorld('threecut', {
     load: (projectId: string) => ipcRenderer.invoke('canvas:load', projectId) as Promise<CanvasDocument>,
     save: (projectId: string, canvas: CanvasDocument) => (
       ipcRenderer.invoke('canvas:save', { projectId, canvas }) as Promise<void>
+    ),
+  },
+  director: {
+    load: (projectId: string) => ipcRenderer.invoke('director:load', projectId) as Promise<DirectorDocument>,
+    save: (projectId: string, director: DirectorDocument) => (
+      ipcRenderer.invoke('director:save', { projectId, director }) as Promise<void>
     ),
   },
   config: {

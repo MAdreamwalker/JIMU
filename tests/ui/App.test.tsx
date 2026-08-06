@@ -8,6 +8,7 @@ describe('App', () => {
       registry: { list: vi.fn().mockResolvedValue([]) },
       pipeline: { load: vi.fn().mockResolvedValue({ stages: {} }), save: vi.fn() },
       canvas: { load: vi.fn().mockResolvedValue({ assets: [], cards: [] }), save: vi.fn() },
+      director: { load: vi.fn().mockResolvedValue({ objects: [], snapshots: [] }), save: vi.fn() },
       config: { getAll: vi.fn().mockResolvedValue({ providers: [] }), save: vi.fn() },
       storyboardPrompts: { read: vi.fn().mockResolvedValue({}), save: vi.fn() },
       skills: { list: vi.fn().mockResolvedValue([]), save: vi.fn() },
