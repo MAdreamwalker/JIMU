@@ -3,7 +3,7 @@
   "compilerOptions": {
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "rootDir": "electron",
+    "rootDir": ".",
     "outDir": "dist-electron",
     "noEmit": false,
     "declaration": false,

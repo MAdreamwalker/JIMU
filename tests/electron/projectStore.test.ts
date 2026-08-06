@@ -20,4 +20,55 @@ describe('project store', () => {
     const loaded = await store.readProject(project.id);
     expect(loaded.name).toBe('Demo Project');
   });
+
+  it('rejects project names that are not a single safe folder segment', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-projects-'));
+    const store = createProjectStore(root);
+
+    for (const name of ['', '   ', '.', '..', 'nested/project', 'nested\\project']) {
+      await expect(store.createProject({ name, aspectRatio: '16:9' })).rejects.toThrow('Invalid project name');
+    }
+  });
+
+  it('rejects hostile registry folders outside the project root', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-projects-'));
+    const outside = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-outside-'));
+    const store = createProjectStore(root);
+
+    await fs.writeFile(path.join(outside, 'project.json'), JSON.stringify({ name: 'Outside' }), 'utf8');
+    await fs.writeFile(
+      path.join(root, 'project-registry.json'),
+      JSON.stringify([{ id: 'outside', folder: '../' + path.basename(outside) }]),
+      'utf8',
+    );
+
+    await expect(store.readProject('outside')).rejects.toThrow('Invalid project name');
+  });
+
+  it('rejects registry projects that escape through a directory link', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-projects-'));
+    const outside = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-outside-'));
+    const linkPath = path.join(root, 'escape');
+    const store = createProjectStore(root);
+
+    await fs.writeFile(path.join(outside, 'project.json'), JSON.stringify({ name: 'Outside' }), 'utf8');
+
+    try {
+      await fs.symlink(outside, linkPath, process.platform === 'win32' ? 'junction' : 'dir');
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code === 'EPERM' || code === 'EACCES') {
+        return;
+      }
+      throw error;
+    }
+
+    await fs.writeFile(
+      path.join(root, 'project-registry.json'),
+      JSON.stringify([{ id: 'outside', folder: 'escape' }]),
+      'utf8',
+    );
+
+    await expect(store.readProject('outside')).rejects.toThrow('Path resolves outside authorized roots');
+  });
 });

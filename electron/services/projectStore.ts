@@ -1,19 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { assertInsideAllowedRoots } from './pathPolicy.js';
-
-type ProjectAspectRatio = '16:9' | '9:16' | '1:1' | '4:3' | 'custom';
-
-interface ProjectMetadata {
-  schemaVersion: 1;
-  id: string;
-  name: string;
-  aspectRatio: ProjectAspectRatio;
-  type: 'storyboard' | 'short-video' | 'animation' | 'mixed';
-  coverPath: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
+import { createEmptyProject, type ProjectAspectRatio, type ProjectMetadata } from '../../src/domain/project.js';
+import { assertRealPathInsideAllowedRoots } from './pathPolicy.js';
 
 interface ProjectIndexEntry {
   id: string;
@@ -36,31 +24,18 @@ const requiredDirs = [
   'prompts',
 ];
 
-function createEmptyProject(name: string, aspectRatio: ProjectAspectRatio): ProjectMetadata {
-  const now = new Date().toISOString();
-  const id = Array.from(globalThis.crypto.getRandomValues(new Uint8Array(12)))
-    .map((value) => (value % 36).toString(36))
-    .join('');
-
-  return {
-    schemaVersion: 1,
-    id: `proj_${id}`,
-    name,
-    aspectRatio,
-    type: 'storyboard',
-    coverPath: null,
-    createdAt: now,
-    updatedAt: now,
-  };
-}
-
 export function createProjectStore(rootPath: string): ProjectStore {
   const resolvedRoot = path.resolve(rootPath);
-  const registryPath = assertInsideAllowedRoots(path.join(resolvedRoot, 'project-registry.json'), [resolvedRoot]);
+  const registryPath = path.join(resolvedRoot, 'project-registry.json');
+
+  async function safePath(targetPath: string): Promise<string> {
+    await fs.mkdir(resolvedRoot, { recursive: true });
+    return assertRealPathInsideAllowedRoots(targetPath, [resolvedRoot]);
+  }
 
   async function readRegistry(): Promise<ProjectIndexEntry[]> {
     try {
-      return JSON.parse(await fs.readFile(registryPath, 'utf8')) as ProjectIndexEntry[];
+      return JSON.parse(await fs.readFile(await safePath(registryPath), 'utf8')) as ProjectIndexEntry[];
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         return [];
@@ -70,30 +45,39 @@ export function createProjectStore(rootPath: string): ProjectStore {
   }
 
   async function writeRegistry(entries: ProjectIndexEntry[]) {
-    await fs.mkdir(resolvedRoot, { recursive: true });
-    await fs.writeFile(registryPath, JSON.stringify(entries, null, 2), 'utf8');
+    await fs.writeFile(await safePath(registryPath), JSON.stringify(entries, null, 2), 'utf8');
   }
 
   function projectPath(folder: string): string {
-    return assertInsideAllowedRoots(path.join(resolvedRoot, folder), [resolvedRoot]);
+    assertSafeProjectName(folder);
+    return path.join(resolvedRoot, folder);
+  }
+
+  async function writeProjectJson(projectDir: string, fileName: string, value: unknown) {
+    const filePath = path.join(projectDir, fileName);
+    await fs.writeFile(await safePath(filePath), JSON.stringify(value, null, 2), 'utf8');
   }
 
   return {
     async createProject(input) {
+      assertSafeProjectName(input.name);
       const project = createEmptyProject(input.name, input.aspectRatio);
       const projectDir = projectPath(input.name);
 
+      await safePath(projectDir);
       await fs.mkdir(projectDir, { recursive: false });
       for (const directory of requiredDirs) {
-        await fs.mkdir(path.join(projectDir, directory), { recursive: true });
+        const directoryPath = path.join(projectDir, directory);
+        await safePath(directoryPath);
+        await fs.mkdir(directoryPath, { recursive: true });
       }
 
-      await fs.writeFile(path.join(projectDir, 'project.json'), JSON.stringify(project, null, 2), 'utf8');
-      await fs.writeFile(path.join(projectDir, 'canvas.json'), JSON.stringify({ assets: [], cards: [] }, null, 2), 'utf8');
-      await fs.writeFile(path.join(projectDir, 'pipeline.json'), JSON.stringify({ stages: {} }, null, 2), 'utf8');
-      await fs.writeFile(path.join(projectDir, 'director.json'), JSON.stringify({ objects: [], snapshots: [] }, null, 2), 'utf8');
-      await fs.writeFile(path.join(projectDir, 'timeline.json'), JSON.stringify({ tracks: [] }, null, 2), 'utf8');
-      await fs.writeFile(path.join(projectDir, 'tasks.json'), JSON.stringify({ tasks: [] }, null, 2), 'utf8');
+      await writeProjectJson(projectDir, 'project.json', project);
+      await writeProjectJson(projectDir, 'canvas.json', { assets: [], cards: [] });
+      await writeProjectJson(projectDir, 'pipeline.json', { stages: {} });
+      await writeProjectJson(projectDir, 'director.json', { objects: [], snapshots: [] });
+      await writeProjectJson(projectDir, 'timeline.json', { tracks: [] });
+      await writeProjectJson(projectDir, 'tasks.json', { tasks: [] });
 
       const registry = await readRegistry();
       registry.push({ id: project.id, folder: input.name });
@@ -108,8 +92,22 @@ export function createProjectStore(rootPath: string): ProjectStore {
         throw new Error('Project not found');
       }
 
-      const projectFile = assertInsideAllowedRoots(path.join(projectPath(entry.folder), 'project.json'), [resolvedRoot]);
+      const projectFile = await safePath(path.join(projectPath(entry.folder), 'project.json'));
       return JSON.parse(await fs.readFile(projectFile, 'utf8')) as ProjectMetadata;
     },
   };
+}
+
+function assertSafeProjectName(name: string): void {
+  const isReservedWindowsName = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i.test(name);
+  const isSafe = name.trim().length > 0
+    && name !== '.'
+    && name !== '..'
+    && !/[<>:"/\\|?*\u0000-\u001f]/.test(name)
+    && !/[. ]$/.test(name)
+    && !isReservedWindowsName;
+
+  if (!isSafe) {
+    throw new Error('Invalid project name');
+  }
 }

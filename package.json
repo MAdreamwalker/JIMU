@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "electron:dev": "electron .",
-    "build": "tsc -p tsconfig.electron.json && tsc --noEmit && vite build",
+    "build": "tsc -p tsconfig.electron.json && node electron/writeMainEntrypoint.mjs && tsc --noEmit && vite build",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
