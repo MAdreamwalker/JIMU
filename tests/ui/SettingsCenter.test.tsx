@@ -11,10 +11,11 @@ describe('SettingsCenter', () => {
   it('shows provider and prompt sections after loading through the preload API', async () => {
     const getAll = vi.fn().mockResolvedValue({ providers: [] });
     const read = vi.fn().mockResolvedValue({ 'chapter-split': 'Split chapters' });
+    const list = vi.fn().mockResolvedValue([]);
     vi.stubGlobal('threecut', {
       config: { getAll, save: vi.fn() },
       storyboardPrompts: { read },
-      skills: { list: vi.fn().mockResolvedValue([]), save: vi.fn() },
+      skills: { list, save: vi.fn() },
     });
 
     render(<SettingsCenter />);
@@ -24,5 +25,18 @@ describe('SettingsCenter', () => {
     expect(screen.getByText('Skills 管理')).toBeInTheDocument();
     expect(getAll).toHaveBeenCalledOnce();
     expect(read).toHaveBeenCalledOnce();
+    expect(list).toHaveBeenCalledOnce();
+  });
+
+  it('shows a visible error when settings data cannot load', async () => {
+    vi.stubGlobal('threecut', {
+      config: { getAll: vi.fn().mockRejectedValue(new Error('Config unavailable')), save: vi.fn() },
+      storyboardPrompts: { read: vi.fn().mockResolvedValue({}), save: vi.fn() },
+      skills: { list: vi.fn().mockResolvedValue([]), save: vi.fn() },
+    });
+
+    render(<SettingsCenter />);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('无法加载设置：Config unavailable');
   });
 });

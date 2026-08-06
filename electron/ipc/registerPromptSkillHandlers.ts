@@ -15,26 +15,35 @@ interface PromptSkillHandlerPaths {
 }
 
 export function registerPromptSkillHandlers(paths: PromptSkillHandlerPaths): void {
-  ipcMain.handle('storyboardPrompts:read', () => readJson(paths.storyboardPromptsPath, {}));
+  ipcMain.handle('storyboardPrompts:read', async () => {
+    const prompts = await readJson(paths.storyboardPromptsPath, {}, 'storyboard prompts');
+    assertPrompts(prompts);
+    return prompts;
+  });
   ipcMain.handle('storyboardPrompts:save', async (_event, prompts: Record<string, string>) => {
     assertPrompts(prompts);
     await writeJson(paths.storyboardPromptsPath, prompts);
   });
-  ipcMain.handle('skills:list', () => readJson(paths.skillsPath, []));
+  ipcMain.handle('skills:list', async () => {
+    const skills = await readJson(paths.skillsPath, [], 'skills');
+    assertSkills(skills);
+    return skills;
+  });
   ipcMain.handle('skills:save', async (_event, skills: SkillDefinition[]) => {
     assertSkills(skills);
     await writeJson(paths.skillsPath, skills);
   });
 }
 
-async function readJson<T>(filePath: string, fallback: T): Promise<T> {
+async function readJson(filePath: string, fallback: unknown, label: string): Promise<unknown> {
   try {
-    return JSON.parse(await fs.readFile(filePath, 'utf8')) as T;
+    return JSON.parse(await fs.readFile(filePath, 'utf8')) as unknown;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return fallback;
     }
-    throw error;
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`Unable to read ${label}: ${message}`);
   }
 }
 
