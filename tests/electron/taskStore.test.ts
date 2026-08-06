@@ -9,7 +9,7 @@ describe('task store', () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-task-root-'));
     const dir = path.join(root, 'project');
     await fs.mkdir(dir);
-    const task = await appendTask(dir, root, {
+    const task = await appendTask(dir, {
       id: 'task_123',
       category: 'text',
       status: 'failed',
@@ -44,7 +44,15 @@ describe('task store', () => {
       throw error;
     }
 
-    await expect(appendTask(dir, root, createTask())).rejects.toThrow('Path resolves outside authorized roots');
+    await expect(appendTask(dir, createTask())).rejects.toThrow('Path resolves outside authorized roots');
+  });
+
+  it('allows callers to provide a separate authorized root', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-task-root-'));
+    const dir = path.join(root, 'project');
+    await fs.mkdir(dir);
+
+    await expect(appendTask(dir, createTask(), root)).resolves.toMatchObject({ id: 'task_123' });
   });
 });
 

@@ -19,8 +19,8 @@ function redact(text: string): string {
 
 export async function appendTask(
   projectDir: string,
-  allowedRoot: string,
   task: TaskRecord,
+  allowedRoot = projectDir,
 ): Promise<TaskRecord> {
   const safeProjectDir = await assertRealPathInsideAllowedRoots(projectDir, [allowedRoot]);
   const filePath = await assertRealPathInsideAllowedRoots(path.join(safeProjectDir, 'tasks.json'), [safeProjectDir]);
