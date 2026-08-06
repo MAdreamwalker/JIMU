@@ -102,7 +102,8 @@ describe('project package safety', () => {
   it('rejects unsafe package file paths before shell behavior', async () => {
     const unsafePaths = ['', '  Demo.3cut', 'Demo.3cut  ', '../Demo.3cut', '..\\Demo.3cut',
       'C:\\tmp\\..\\Demo.3cut', 'C:\\tmp. \\Demo.3cut', 'C:\\tmp.\\Demo.3cut',
-      'C:Demo.3cut', 'Demo.3cut\u0000', 'C:\\tmp\\Demo.zip'];
+      'C:\\tmp\\Demo.3cut\\', '/tmp/Demo.3cut/', 'C:Demo.3cut', 'Demo.3cut\u0000',
+      'C:\\tmp\\Demo.zip'];
 
     for (const packagePath of unsafePaths) {
       await expect(exportProjectPackage('proj_1', packagePath)).rejects.toThrow('Invalid package file path');

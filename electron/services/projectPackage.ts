@@ -99,6 +99,7 @@ export function validateExternalPackageFilePath(value: unknown): asserts value i
 
 function isSafeExternalPackageFilePath(value: unknown): value is string {
   if (!isNonEmptyString(value) || value !== value.trim() || value.includes('\0')) return false;
+  if (/[\\/]$/.test(value)) return false;
 
   const normalized = value.replace(/\\/g, '/');
   const isAbsolute = path.posix.isAbsolute(value) || path.win32.isAbsolute(value);
