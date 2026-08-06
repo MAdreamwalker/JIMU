@@ -72,4 +72,12 @@ contextBridge.exposeInMainWorld('threecut', {
     list: () => ipcRenderer.invoke('skills:list') as Promise<SkillDefinition[]>,
     save: (skills: SkillDefinition[]) => ipcRenderer.invoke('skills:save', skills) as Promise<void>,
   },
+  projectPackage: {
+    export: (projectId: string, destinationPath: string) => (
+      ipcRenderer.invoke('project:export', { projectId, destinationPath }) as Promise<string>
+    ),
+    import: (packagePath: string) => (
+      ipcRenderer.invoke('project:import', { packagePath }) as Promise<ProjectMetadata>
+    ),
+  },
 });
