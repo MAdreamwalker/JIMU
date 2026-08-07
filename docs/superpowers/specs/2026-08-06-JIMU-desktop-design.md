@@ -1,10 +1,10 @@
-# 3cut-like AI Visual Creation Desktop App Design
+# JIMU AI Visual Creation Desktop App Design
 
 Date: 2026-08-06
 
 ## Goal
 
-Build an original Electron desktop application inspired by the observed 3cut workflow. The product should support a complete AI visual content pipeline: project setup, storyboarding, asset management, 3D director previsualization, image and video generation, timeline editing, media analysis, MP4 export, project packaging, Prompt management, Skills management, third-party model keys, and optional cloud account/credits.
+Build an original Electron desktop application inspired by the observed JIMU workflow. The product should support a complete AI visual content pipeline: project setup, storyboarding, asset management, 3D director previsualization, image and video generation, timeline editing, media analysis, MP4 export, project packaging, Prompt management, Skills management, third-party model keys, and optional cloud account/credits.
 
 This is not a source-code or asset clone of the installer. The implementation will be original, using the installer only as a product-function reference.
 
@@ -151,7 +151,7 @@ JSON stores relative media paths, not embedded large files.
 Global app data is stored in Electron `userData`:
 
 ```text
-3cut-clone-config.json
+JIMU-config.json
 project-registry.json
 skills.json
 storyboard-prompts.json

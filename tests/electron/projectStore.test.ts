@@ -1,0 +1,108 @@
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { describe, expect, it } from 'vitest';
+import { createProjectStore } from '../../electron/services/projectStore';
+
+describe('project store', () => {
+  it('creates a project folder with required json files and media directories', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-projects-'));
+    const store = createProjectStore(root);
+
+    const project = await store.createProject({ name: 'Demo Project', aspectRatio: '16:9' });
+    const projectDir = path.join(root, 'Demo Project');
+
+    await expect(fs.stat(path.join(projectDir, 'project.json'))).resolves.toBeTruthy();
+    await expect(fs.stat(path.join(projectDir, 'canvas.json'))).resolves.toBeTruthy();
+    await expect(fs.stat(path.join(projectDir, 'pipeline.json'))).resolves.toBeTruthy();
+    await expect(fs.stat(path.join(projectDir, 'media/images'))).resolves.toBeTruthy();
+
+    const loaded = await store.readProject(project.id);
+    expect(loaded.name).toBe('Demo Project');
+  });
+
+  it('lists registered projects in registry order', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-projects-'));
+    const store = createProjectStore(root);
+
+    const first = await store.createProject({ name: 'First Project', aspectRatio: '16:9' });
+    const second = await store.createProject({ name: 'Second Project', aspectRatio: '9:16' });
+
+    await expect(store.listProjects()).resolves.toEqual([first, second]);
+  });
+
+  it('rejects project names that are not a single safe folder segment', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-projects-'));
+    const store = createProjectStore(root);
+
+    for (const name of ['', '   ', '.', '..', 'nested/project', 'nested\\project']) {
+      await expect(store.createProject({ name, aspectRatio: '16:9' })).rejects.toThrow('Invalid project name');
+    }
+  });
+
+  it('rejects hostile registry folders outside the project root', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-projects-'));
+    const outside = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-outside-'));
+    const store = createProjectStore(root);
+
+    await fs.writeFile(path.join(outside, 'project.json'), JSON.stringify({ name: 'Outside' }), 'utf8');
+    await fs.writeFile(
+      path.join(root, 'project-registry.json'),
+      JSON.stringify([{ id: 'outside', folder: '../' + path.basename(outside) }]),
+      'utf8',
+    );
+
+    await expect(store.readProject('outside')).rejects.toThrow('Invalid project name');
+  });
+
+  it('rejects registry projects that escape through a directory link', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-projects-'));
+    const outside = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-outside-'));
+    const linkPath = path.join(root, 'escape');
+    const store = createProjectStore(root);
+
+    await fs.writeFile(path.join(outside, 'project.json'), JSON.stringify({ name: 'Outside' }), 'utf8');
+
+    try {
+      await fs.symlink(outside, linkPath, process.platform === 'win32' ? 'junction' : 'dir');
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code === 'EPERM' || code === 'EACCES') {
+        return;
+      }
+      throw error;
+    }
+
+    await fs.writeFile(
+      path.join(root, 'project-registry.json'),
+      JSON.stringify([{ id: 'outside', folder: 'escape' }]),
+      'utf8',
+    );
+
+    await expect(store.readProject('outside')).rejects.toThrow('Path resolves outside authorized roots');
+  });
+
+  it('rejects a pipeline file link that resolves outside the project directory', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-projects-'));
+    const outside = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-outside-'));
+    const store = createProjectStore(root);
+    const project = await store.createProject({ name: 'Safe Project', aspectRatio: '16:9' });
+    const pipelinePath = path.join(root, 'Safe Project', 'pipeline.json');
+    const outsidePipeline = path.join(outside, 'pipeline.json');
+    await fs.writeFile(outsidePipeline, JSON.stringify({ stages: {} }), 'utf8');
+    await fs.unlink(pipelinePath);
+
+    try {
+      await fs.symlink(outsidePipeline, pipelinePath, 'file');
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code === 'EPERM' || code === 'EACCES') {
+        return;
+      }
+      throw error;
+    }
+
+    await expect(store.getProjectFilePath(project.id, 'pipeline.json'))
+      .rejects.toThrow('Path resolves outside authorized roots');
+  });
+});

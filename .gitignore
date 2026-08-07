@@ -1,2 +1,5 @@
-.inspect_3cut/
+.inspect_JIMU/
 .worktrees/
+node_modules/
+dist/
+dist-electron/
