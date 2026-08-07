@@ -89,5 +89,11 @@ contextBridge.exposeInMainWorld('jimu', {
     import: (packagePath: string) => (
       ipcRenderer.invoke('project:import', { packagePath }) as Promise<ProjectMetadata>
     ),
+    exportWithDialog: (projectId: string) => (
+      ipcRenderer.invoke('project:exportWithDialog', { projectId }) as Promise<string | null>
+    ),
+    importWithDialog: () => (
+      ipcRenderer.invoke('project:importWithDialog') as Promise<ProjectMetadata | null>
+    ),
   },
 });

@@ -43,6 +43,34 @@ export function ProjectCenter() {
     }
   }
 
+  async function importProjectPackage() {
+    try {
+      const importedProject = await window.jimu.projectPackage.importWithDialog();
+      setCreateError('');
+      if (!importedProject) {
+        setMessage('Import cancelled');
+        return;
+      }
+
+      setProjects((currentProjects) => [...currentProjects, importedProject]);
+      setMessage(`Imported ${importedProject.name}`);
+    } catch (error) {
+      setMessage('');
+      setCreateError(`Unable to import project: ${getErrorMessage(error)}`);
+    }
+  }
+
+  async function exportProjectPackage(project: ProjectMetadata) {
+    try {
+      const exportedPath = await window.jimu.projectPackage.exportWithDialog(project.id);
+      setCreateError('');
+      setMessage(exportedPath ? `Exported ${project.name}` : 'Export cancelled');
+    } catch (error) {
+      setMessage('');
+      setCreateError(`Unable to export project: ${getErrorMessage(error)}`);
+    }
+  }
+
   return (
     <section aria-labelledby="project-title">
       <h1 id="project-title">Project Center</h1>
@@ -51,11 +79,19 @@ export function ProjectCenter() {
         <input value={name} onChange={(event) => setName(event.target.value)} />
       </label>
       <button type="button" onClick={createProject}>Create Project</button>
+      <button type="button" onClick={importProjectPackage}>Import .JIMU</button>
       {message ? <p role="status">{message}</p> : null}
       {loadError ? <p role="alert">{loadError}</p> : null}
       {createError ? <p role="alert">{createError}</p> : null}
       <ul aria-label="Project List">
-        {projects.map((project) => <li key={project.id}>{project.name}</li>)}
+        {projects.map((project) => (
+          <li key={project.id}>
+            <span>{project.name}</span>
+            <button type="button" onClick={() => { void exportProjectPackage(project); }}>
+              Export {project.name}
+            </button>
+          </li>
+        ))}
       </ul>
     </section>
   );

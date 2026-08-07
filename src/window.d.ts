@@ -64,6 +64,8 @@ declare global {
       projectPackage: {
         export: (projectId: string, destinationPath: string) => Promise<string>;
         import: (packagePath: string) => Promise<ProjectMetadata>;
+        exportWithDialog: (projectId: string) => Promise<string | null>;
+        importWithDialog: () => Promise<ProjectMetadata | null>;
       };
     };
   }
