@@ -11,6 +11,7 @@ import { registerProjectPackageHandlers } from './ipc/registerProjectPackageHand
 import { registerTaskHandlers } from './ipc/registerTaskHandlers.js';
 import { createConfigStore } from './services/configStore.js';
 import { createCryptoStore } from './services/cryptoStore.js';
+import { resolveRendererUrl } from './services/runtimePaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -27,9 +28,7 @@ async function createWindow() {
     },
   });
 
-  await win.loadURL(
-    process.env.VITE_DEV_SERVER_URL ?? `file://${path.join(__dirname, '../dist/index.html')}`,
-  );
+  await win.loadURL(resolveRendererUrl(__dirname));
 }
 
 app.whenReady().then(async () => {
