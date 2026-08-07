@@ -1,6 +1,8 @@
 {
   "name": "jimu-like-desktop",
   "version": "0.1.0",
+  "description": "JIMU desktop creative production workflow app.",
+  "author": "JIMU",
   "private": true,
   "type": "module",
   "main": "dist-electron/main.js",
@@ -8,11 +10,43 @@
     "dev": "vite --host 127.0.0.1",
     "electron:dev": "electron .",
     "build": "tsc -p tsconfig.electron.json && node electron/writeMainEntrypoint.mjs && tsc --noEmit && vite build",
+    "pack:win": "pnpm build && node electron/packageWinInstaller.mjs --dir",
+    "dist:win": "pnpm build && node electron/packageWinInstaller.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
+  "build": {
+    "appId": "com.jimu.desktop",
+    "productName": "JIMU",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-Setup-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "JIMU"
+    }
+  },
   "dependencies": {
-    "electron": "^33.3.1",
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -26,6 +60,8 @@
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^33.3.1",
+    "electron-builder": "^26.15.3",
     "jsdom": "^25.0.1",
     "typescript": "^5.7.3",
     "vite": "^6.0.11",
