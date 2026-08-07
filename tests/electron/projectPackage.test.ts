@@ -12,8 +12,14 @@ import {
 } from '../../electron/services/projectPackage';
 
 const handlers = vi.hoisted(() => new Map<string, (...args: any[]) => unknown>());
+const dialog = vi.hoisted(() => ({
+  showOpenDialog: vi.fn(),
+  showSaveDialog: vi.fn(),
+}));
+let ipcRoot = '';
 
 vi.mock('electron', () => ({
+  dialog,
   ipcMain: {
     handle: vi.fn((channel: string, handler: (...args: any[]) => unknown) => {
       handlers.set(channel, handler);
@@ -258,8 +264,11 @@ describe('project package safety', () => {
 describe('project package IPC handlers', () => {
   beforeEach(async () => {
     handlers.clear();
+    dialog.showOpenDialog.mockReset();
+    dialog.showSaveDialog.mockReset();
+    ipcRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-package-ipc-'));
     const { registerProjectPackageHandlers } = await import('../../electron/ipc/registerProjectPackageHandlers');
-    registerProjectPackageHandlers('projects');
+    registerProjectPackageHandlers(ipcRoot);
   });
 
   it('forwards validated export and import requests', async () => {
@@ -293,6 +302,35 @@ describe('project package IPC handlers', () => {
     await expect(handlers.get('project:import')!({}, { packagePath: ' Demo.JIMU' }))
       .rejects.toThrow('Invalid project import input');
   });
+
+  it('returns null when package file dialogs are cancelled', async () => {
+    const project = await createProjectStore(ipcRoot).createProject({ name: 'Dialog Demo', aspectRatio: '16:9' });
+    dialog.showSaveDialog.mockResolvedValue({ canceled: true });
+    dialog.showOpenDialog.mockResolvedValue({ canceled: true, filePaths: [] });
+
+    await expect(handlers.get('project:exportWithDialog')!({}, { projectId: project.id })).resolves.toBeNull();
+    await expect(handlers.get('project:importWithDialog')!({})).resolves.toBeNull();
+  });
+
+  it('uses selected package file paths from native dialogs', async () => {
+    const project = await createProjectStore(ipcRoot).createProject({ name: 'Dialog Demo', aspectRatio: '16:9' });
+    const packagePath = path.join(os.tmpdir(), `DialogDemo-${Date.now()}.JIMU`);
+    dialog.showSaveDialog.mockResolvedValue({ canceled: false, filePath: packagePath });
+    dialog.showOpenDialog.mockResolvedValue({ canceled: false, filePaths: [packagePath] });
+
+    await expect(handlers.get('project:exportWithDialog')!({}, { projectId: project.id }))
+      .resolves.toBe(packagePath);
+    await expect(handlers.get('project:importWithDialog')!({}))
+      .rejects.toThrow('Project already exists');
+
+    expect(dialog.showSaveDialog).toHaveBeenCalledWith(expect.objectContaining({
+      filters: [{ name: 'JIMU Project Package', extensions: ['JIMU'] }],
+    }));
+    expect(dialog.showOpenDialog).toHaveBeenCalledWith(expect.objectContaining({
+      filters: [{ name: 'JIMU Project Package', extensions: ['JIMU'] }],
+      properties: ['openFile'],
+    }));
+  });
 });
 
 describe('project package preload and renderer types', () => {
@@ -308,9 +346,13 @@ describe('project package preload and renderer types', () => {
 
     exposed.api.projectPackage.export('proj_1', 'Demo.JIMU');
     exposed.api.projectPackage.import('Demo.JIMU');
+    exposed.api.projectPackage.exportWithDialog('proj_1');
+    exposed.api.projectPackage.importWithDialog();
     expect(ipcRenderer.invoke).toHaveBeenNthCalledWith(1, 'project:export', {
       projectId: 'proj_1', destinationPath: 'Demo.JIMU',
     });
     expect(ipcRenderer.invoke).toHaveBeenNthCalledWith(2, 'project:import', { packagePath: 'Demo.JIMU' });
+    expect(ipcRenderer.invoke).toHaveBeenNthCalledWith(3, 'project:exportWithDialog', { projectId: 'proj_1' });
+    expect(ipcRenderer.invoke).toHaveBeenNthCalledWith(4, 'project:importWithDialog');
   });
 });
