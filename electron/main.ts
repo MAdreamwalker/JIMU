@@ -45,7 +45,7 @@ app.whenReady().then(async () => {
   });
   registerTimelineHandlers(projectsPath);
   registerMediaHandlers(projectsPath);
-  registerProjectPackageHandlers();
+  registerProjectPackageHandlers(projectsPath);
   registerTaskHandlers(projectsPath);
   await createWindow();
 });

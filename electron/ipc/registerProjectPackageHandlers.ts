@@ -5,14 +5,14 @@ import {
   validateExternalPackageFilePath,
 } from '../services/projectPackage.js';
 
-export function registerProjectPackageHandlers(): void {
+export function registerProjectPackageHandlers(rootPath: string): void {
   ipcMain.handle('project:export', async (_event, input: unknown) => {
     const { projectId, destinationPath } = validateExportInput(input);
-    return exportProjectPackage(projectId, destinationPath);
+    return exportProjectPackage(rootPath, projectId, destinationPath);
   });
 
   ipcMain.handle('project:import', async (_event, input: unknown) => {
-    return importProjectPackage(validateImportInput(input));
+    return importProjectPackage(rootPath, validateImportInput(input));
   });
 }
 

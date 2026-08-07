@@ -48,9 +48,9 @@ engine.
 Provider credentials, media analysis, image/video generation, and related
 asset confirmation are validation or shell paths in this package. Configure
 local providers in Settings before exercising those paths; no external model
-service is bundled here. Project archive export validates its destination
-contract, while archive import is currently a validation path and does not yet
-restore a project.
+service is bundled here. Project archive export/import uses the `.JIMU`
+package format to move registered project documents and media files between
+project libraries.
 
 ## Packaging Notes
 

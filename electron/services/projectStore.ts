@@ -10,6 +10,11 @@ interface ProjectIndexEntry {
 
 export interface ProjectStore {
   createProject(input: { name: string; aspectRatio: ProjectAspectRatio }): Promise<ProjectMetadata>;
+  importProject(input: {
+    folderName: string;
+    project: ProjectMetadata;
+    files: Map<string, Uint8Array>;
+  }): Promise<ProjectMetadata>;
   /** Rejects when a registry entry references a missing or corrupt project file. */
   listProjects(): Promise<ProjectMetadata[]>;
   readProject(projectId: string): Promise<ProjectMetadata>;
@@ -104,6 +109,45 @@ export function createProjectStore(rootPath: string): ProjectStore {
 
       return project;
     },
+    async importProject(input) {
+      assertSafeProjectName(input.folderName);
+      validateProjectMetadata(input.project);
+      if (input.project.name !== input.folderName) {
+        throw new Error('Imported project folder does not match project name');
+      }
+
+      const registry = await readRegistry();
+      if (registry.some((entry) => entry.id === input.project.id || entry.folder.toLowerCase() === input.folderName.toLowerCase())) {
+        throw new Error('Project already exists');
+      }
+
+      const projectDir = projectPath(input.folderName);
+      await safePath(projectDir);
+      await fs.mkdir(projectDir, { recursive: false });
+      for (const directory of requiredDirs) {
+        const directoryPath = path.join(projectDir, directory);
+        await safePath(directoryPath);
+        await fs.mkdir(directoryPath, { recursive: true });
+      }
+
+      try {
+        for (const [relativePath, bytes] of input.files) {
+          validateProjectRelativePath(relativePath);
+          const filePath = path.join(projectDir, ...relativePath.split('/'));
+          await safePath(path.dirname(filePath));
+          await fs.mkdir(path.dirname(filePath), { recursive: true });
+          await fs.writeFile(await safePath(filePath), bytes);
+        }
+
+        registry.push({ id: input.project.id, folder: input.folderName });
+        await writeRegistry(registry);
+      } catch (error) {
+        await fs.rm(projectDir, { recursive: true, force: true });
+        throw error;
+      }
+
+      return input.project;
+    },
     async listProjects() {
       const registry = await readRegistry();
       return Promise.all(registry.map(readProjectEntry));
@@ -143,4 +187,39 @@ function assertSafeProjectName(name: string): void {
   if (!isSafe) {
     throw new Error('Invalid project name');
   }
+}
+
+function validateProjectRelativePath(value: string): void {
+  const segments = value.split('/');
+  const isSafe = value.length > 0
+    && !value.includes('\0')
+    && !value.includes('\\')
+    && !path.posix.isAbsolute(value)
+    && !path.win32.isAbsolute(value)
+    && !/^[a-z][a-z0-9+.-]*:/i.test(value)
+    && segments.every((segment) => segment && segment !== '.' && segment !== '..' && !/[ .]$/.test(segment));
+
+  if (!isSafe) {
+    throw new Error('Invalid project file path');
+  }
+}
+
+function validateProjectMetadata(project: ProjectMetadata): void {
+  const aspectRatios = new Set<ProjectAspectRatio>(['16:9', '9:16', '1:1', '4:3', 'custom']);
+  const projectTypes = new Set(['storyboard', 'short-video', 'animation', 'mixed']);
+  const isSafe = project
+    && project.schemaVersion === 1
+    && typeof project.id === 'string'
+    && project.id.trim().length > 0
+    && typeof project.name === 'string'
+    && aspectRatios.has(project.aspectRatio)
+    && projectTypes.has(project.type)
+    && (project.coverPath === null || typeof project.coverPath === 'string')
+    && typeof project.createdAt === 'string'
+    && typeof project.updatedAt === 'string';
+
+  if (!isSafe) {
+    throw new Error('Invalid imported project metadata');
+  }
+  assertSafeProjectName(project.name);
 }
