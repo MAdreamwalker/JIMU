@@ -10,7 +10,7 @@ import type { AppConfig } from './services/configStore.js';
 import type { SkillDefinition } from './ipc/registerPromptSkillHandlers.js';
 import type { TaskListItem } from './ipc/registerTaskHandlers.js';
 
-contextBridge.exposeInMainWorld('threecut', {
+contextBridge.exposeInMainWorld('jimu', {
   app: {
     getUserDataPath: () => ipcRenderer.invoke('app:getUserDataPath') as Promise<string>,
   },

@@ -13,13 +13,13 @@ export function ProjectCenter() {
 
     async function loadProjects() {
       try {
-        const loadedProjects = await window.threecut.registry.list();
+        const loadedProjects = await window.jimu.registry.list();
         if (isCurrent) {
           setProjects(loadedProjects);
         }
       } catch (error) {
         if (isCurrent) {
-          setLoadError(`无法加载项目：${getErrorMessage(error)}`);
+          setLoadError(`Unable to load projects: ${getErrorMessage(error)}`);
         }
       }
     }
@@ -33,28 +33,28 @@ export function ProjectCenter() {
 
   async function createProject() {
     try {
-      const project = await window.threecut.registry.create({ name, aspectRatio: '16:9' });
+      const project = await window.jimu.registry.create({ name, aspectRatio: '16:9' });
       setProjects((currentProjects) => [...currentProjects, project]);
       setCreateError('');
-      setMessage(`已创建 ${project.name}`);
+      setMessage(`Created ${project.name}`);
     } catch (error) {
       setMessage('');
-      setCreateError(`创建项目失败：${getErrorMessage(error)}`);
+      setCreateError(`Unable to create project: ${getErrorMessage(error)}`);
     }
   }
 
   return (
     <section aria-labelledby="project-title">
-      <h1 id="project-title">项目中心</h1>
+      <h1 id="project-title">Project Center</h1>
       <label>
-        项目名称
+        Project Name
         <input value={name} onChange={(event) => setName(event.target.value)} />
       </label>
-      <button type="button" onClick={createProject}>创建项目</button>
+      <button type="button" onClick={createProject}>Create Project</button>
       {message ? <p role="status">{message}</p> : null}
       {loadError ? <p role="alert">{loadError}</p> : null}
       {createError ? <p role="alert">{createError}</p> : null}
-      <ul aria-label="项目列表">
+      <ul aria-label="Project List">
         {projects.map((project) => <li key={project.id}>{project.name}</li>)}
       </ul>
     </section>
@@ -62,5 +62,5 @@ export function ProjectCenter() {
 }
 
 function getErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : '未知错误';
+  return error instanceof Error ? error.message : 'Unknown error';
 }

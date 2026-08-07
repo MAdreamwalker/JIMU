@@ -95,14 +95,14 @@ describe('project package safety', () => {
   });
 
   it('exposes validation-only import and export service shells', async () => {
-    await expect(exportProjectPackage('proj_1', 'Demo.3cut')).resolves.toBe('Demo.3cut');
-    await expect(importProjectPackage('Demo.3cut')).rejects.toThrow('not implemented');
+    await expect(exportProjectPackage('proj_1', 'Demo.JIMU')).resolves.toBe('Demo.JIMU');
+    await expect(importProjectPackage('Demo.JIMU')).rejects.toThrow('not implemented');
   });
 
   it('rejects unsafe package file paths before shell behavior', async () => {
-    const unsafePaths = ['', '  Demo.3cut', 'Demo.3cut  ', '../Demo.3cut', '..\\Demo.3cut',
-      'C:\\tmp\\..\\Demo.3cut', 'C:\\tmp. \\Demo.3cut', 'C:\\tmp.\\Demo.3cut',
-      'C:\\tmp\\Demo.3cut\\', '/tmp/Demo.3cut/', 'C:Demo.3cut', 'Demo.3cut\u0000',
+    const unsafePaths = ['', '  Demo.JIMU', 'Demo.JIMU  ', '../Demo.JIMU', '..\\Demo.JIMU',
+      'C:\\tmp\\..\\Demo.JIMU', 'C:\\tmp. \\Demo.JIMU', 'C:\\tmp.\\Demo.JIMU',
+      'C:\\tmp\\Demo.JIMU\\', '/tmp/Demo.JIMU/', 'C:Demo.JIMU', 'Demo.JIMU\u0000',
       'C:\\tmp\\Demo.zip'];
 
     for (const packagePath of unsafePaths) {
@@ -112,8 +112,8 @@ describe('project package safety', () => {
   });
 
   it('allows normal absolute package file paths returned by file dialogs', async () => {
-    const windowsPath = 'C:\\Users\\Me\\Desktop\\Demo.3cut';
-    const posixPath = '/tmp/Demo.3cut';
+    const windowsPath = 'C:\\Users\\Me\\Desktop\\Demo.JIMU';
+    const posixPath = '/tmp/Demo.JIMU';
 
     await expect(exportProjectPackage('proj_1', windowsPath)).resolves.toBe(windowsPath);
     await expect(exportProjectPackage('proj_1', posixPath)).resolves.toBe(posixPath);
@@ -129,14 +129,14 @@ describe('project package IPC handlers', () => {
   });
 
   it('forwards validated export and import requests', async () => {
-    await expect(handlers.get('project:export')!({}, { projectId: 'proj_1', destinationPath: 'Demo.3cut' }))
-      .resolves.toBe('Demo.3cut');
-    await expect(handlers.get('project:import')!({}, { packagePath: 'Demo.3cut' }))
+    await expect(handlers.get('project:export')!({}, { projectId: 'proj_1', destinationPath: 'Demo.JIMU' }))
+      .resolves.toBe('Demo.JIMU');
+    await expect(handlers.get('project:import')!({}, { packagePath: 'Demo.JIMU' }))
       .rejects.toThrow('not implemented');
   });
 
   it('forwards absolute package file paths from external file dialogs', async () => {
-    const destinationPath = 'C:\\Users\\Me\\Desktop\\Demo.3cut';
+    const destinationPath = 'C:\\Users\\Me\\Desktop\\Demo.JIMU';
     await expect(handlers.get('project:export')!({}, { projectId: 'proj_1', destinationPath }))
       .resolves.toBe(destinationPath);
     await expect(handlers.get('project:import')!({}, { packagePath: destinationPath }))
@@ -144,7 +144,7 @@ describe('project package IPC handlers', () => {
   });
 
   it('rejects malformed IPC payloads', async () => {
-    await expect(handlers.get('project:export')!({}, { projectId: '', destinationPath: 'Demo.3cut' }))
+    await expect(handlers.get('project:export')!({}, { projectId: '', destinationPath: 'Demo.JIMU' }))
       .rejects.toThrow('Invalid project export input');
     await expect(handlers.get('project:import')!({}, { packagePath: '' }))
       .rejects.toThrow('Invalid project import input');
@@ -152,11 +152,11 @@ describe('project package IPC handlers', () => {
 
   it('rejects unknown IPC fields and unsafe package paths', async () => {
     await expect(handlers.get('project:export')!({}, {
-      projectId: 'proj_1', destinationPath: 'Demo.3cut', extra: true,
+      projectId: 'proj_1', destinationPath: 'Demo.JIMU', extra: true,
     })).rejects.toThrow('Invalid project export input');
-    await expect(handlers.get('project:import')!({}, { packagePath: '../Demo.3cut' }))
+    await expect(handlers.get('project:import')!({}, { packagePath: '../Demo.JIMU' }))
       .rejects.toThrow('Invalid project import input');
-    await expect(handlers.get('project:import')!({}, { packagePath: ' Demo.3cut' }))
+    await expect(handlers.get('project:import')!({}, { packagePath: ' Demo.JIMU' }))
       .rejects.toThrow('Invalid project import input');
   });
 });
@@ -172,11 +172,11 @@ describe('project package preload and renderer types', () => {
     }));
     await import('../../electron/preload');
 
-    exposed.api.projectPackage.export('proj_1', 'Demo.3cut');
-    exposed.api.projectPackage.import('Demo.3cut');
+    exposed.api.projectPackage.export('proj_1', 'Demo.JIMU');
+    exposed.api.projectPackage.import('Demo.JIMU');
     expect(ipcRenderer.invoke).toHaveBeenNthCalledWith(1, 'project:export', {
-      projectId: 'proj_1', destinationPath: 'Demo.3cut',
+      projectId: 'proj_1', destinationPath: 'Demo.JIMU',
     });
-    expect(ipcRenderer.invoke).toHaveBeenNthCalledWith(2, 'project:import', { packagePath: 'Demo.3cut' });
+    expect(ipcRenderer.invoke).toHaveBeenNthCalledWith(2, 'project:import', { packagePath: 'Demo.JIMU' });
   });
 });

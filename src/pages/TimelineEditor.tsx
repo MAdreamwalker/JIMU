@@ -25,7 +25,7 @@ export function TimelineEditor({ projectId }: { projectId: string }) {
   useEffect(() => {
     let isCurrent = true;
 
-    void window.threecut.timeline.load(projectId).then((loadedTimeline) => {
+    void window.jimu.timeline.load(projectId).then((loadedTimeline) => {
       if (isCurrent) {
         setTimeline(loadedTimeline);
         setLoadError('');
@@ -42,12 +42,12 @@ export function TimelineEditor({ projectId }: { projectId: string }) {
     };
   }, [projectId]);
 
-  useEffect(() => window.threecut.timeline.onExportProgress(setExportProgress), []);
+  useEffect(() => window.jimu.timeline.onExportProgress(setExportProgress), []);
 
   const tracks = trackKinds.map((kind) => timeline.tracks.find((track) => track.kind === kind) ?? emptyTrack(kind));
 
   const exportMp4 = () => {
-    void window.threecut.timeline.exportMp4({
+    void window.jimu.timeline.exportMp4({
       projectId,
       outputPath: 'exports/timeline.mp4',
       timeline,

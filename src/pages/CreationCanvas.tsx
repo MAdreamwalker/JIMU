@@ -3,11 +3,11 @@ import { AssetCard } from '../components/cards/AssetCard';
 import type { Asset } from '../domain/canvas';
 
 const labels: Record<Asset['kind'], string> = {
-  character: '瑙掕壊',
-  scene: '鍦烘櫙',
-  prop: '鐗╁搧',
-  style: '椋庢牸',
-  reference: '鍙傝€冨浘',
+  character: 'Characters',
+  scene: 'Scenes',
+  prop: 'Props',
+  style: 'Styles',
+  reference: 'References',
 };
 
 export function CreationCanvas({ projectId }: { projectId: string }) {
@@ -17,7 +17,7 @@ export function CreationCanvas({ projectId }: { projectId: string }) {
   useEffect(() => {
     let isCurrent = true;
 
-    void window.threecut.canvas.load(projectId).then((document) => {
+    void window.jimu.canvas.load(projectId).then((document) => {
       if (isCurrent) {
         setAssets(document.assets);
         setLoadError('');
@@ -36,7 +36,7 @@ export function CreationCanvas({ projectId }: { projectId: string }) {
 
   return (
     <section aria-labelledby="canvas-title" data-project-id={projectId}>
-      <h1 id="canvas-title">鍒涗綔鐢诲竷</h1>
+      <h1 id="canvas-title">Canvas</h1>
       {loadError ? <p role="alert">{loadError}</p> : null}
       {Object.entries(labels).map(([kind, label]) => (
         <section key={kind} aria-labelledby={`asset-${kind}`}>

@@ -10,7 +10,7 @@ export function TaskCenter() {
 
   useEffect(() => {
     let isCurrent = true;
-    void window.threecut.tasks.list().then((loadedTasks) => {
+    void window.jimu.tasks.list().then((loadedTasks) => {
       if (isCurrent) {
         setTasks(loadedTasks);
         setLoadError('');
@@ -32,13 +32,13 @@ export function TaskCenter() {
   };
 
   const retryTask = (task: TaskListItem) => {
-    void window.threecut.tasks.retry(task.projectId, task.id).then(replaceTask).catch((error: unknown) => {
+    void window.jimu.tasks.retry(task.projectId, task.id).then(replaceTask).catch((error: unknown) => {
       setLoadError(error instanceof Error ? error.message : 'Unable to retry task');
     });
   };
 
   const cancelTask = (task: TaskListItem) => {
-    void window.threecut.tasks.cancel(task.projectId, task.id).then(replaceTask).catch((error: unknown) => {
+    void window.jimu.tasks.cancel(task.projectId, task.id).then(replaceTask).catch((error: unknown) => {
       setLoadError(error instanceof Error ? error.message : 'Unable to cancel task');
     });
   };

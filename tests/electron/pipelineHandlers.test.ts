@@ -18,7 +18,7 @@ describe('pipeline IPC handlers', () => {
   });
 
   it('validates pipeline documents before persisting renderer input', async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-pipeline-root-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-pipeline-root-'));
     const store = createProjectStore(root);
     const project = await store.createProject({ name: 'Pipeline Demo', aspectRatio: '16:9' });
     const { registerPipelineHandlers } = await import('../../electron/ipc/registerPipelineHandlers');
@@ -48,7 +48,7 @@ describe('pipeline IPC handlers', () => {
   });
 
   it('rejects corrupt persisted pipeline documents on load', async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-pipeline-root-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-pipeline-root-'));
     const store = createProjectStore(root);
     const project = await store.createProject({ name: 'Corrupt Pipeline', aspectRatio: '16:9' });
     await fs.writeFile(await store.getProjectFilePath(project.id, 'pipeline.json'), '{"stages":{"source":{"status":"bad"}}}', 'utf8');

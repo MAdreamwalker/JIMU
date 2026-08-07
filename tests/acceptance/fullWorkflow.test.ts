@@ -81,8 +81,8 @@ describe('full workflow contracts', () => {
     await api.tasks.list();
     await api.tasks.retry('demo', 'task_1');
     await api.tasks.cancel('demo', 'task_1');
-    await api.projectPackage.export('demo', 'exports/demo.3cut');
-    await api.projectPackage.import('exports/demo.3cut');
+    await api.projectPackage.export('demo', 'exports/demo.JIMU');
+    await api.projectPackage.import('exports/demo.JIMU');
 
     expect(ipcRenderer.invoke.mock.calls.map(([channel]) => channel)).toEqual([
       'registry:list',
@@ -102,7 +102,7 @@ describe('full workflow contracts', () => {
   });
 
   it('exercises task workflow handlers against project storage', async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-acceptance-root-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-acceptance-root-'));
     const store = createProjectStore(root);
     const project = await store.createProject({ name: 'Acceptance Project', aspectRatio: '16:9' });
     await appendTask(await store.getProjectDirectory(project.id), {

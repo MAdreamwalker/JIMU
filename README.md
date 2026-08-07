@@ -1,4 +1,4 @@
-# 3cut-like Desktop
+# JIMU Desktop
 
 ## Development
 

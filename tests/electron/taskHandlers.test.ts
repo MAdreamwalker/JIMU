@@ -19,7 +19,7 @@ describe('task IPC handlers', () => {
   });
 
   it('lists tasks across registered projects newest first', async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-task-handler-root-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-task-handler-root-'));
     const store = createProjectStore(root);
     const first = await store.createProject({ name: 'First Project', aspectRatio: '16:9' });
     const second = await store.createProject({ name: 'Second Project', aspectRatio: '9:16' });

@@ -6,7 +6,7 @@ import { createProjectStore } from '../../electron/services/projectStore';
 
 describe('project store', () => {
   it('creates a project folder with required json files and media directories', async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-projects-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-projects-'));
     const store = createProjectStore(root);
 
     const project = await store.createProject({ name: 'Demo Project', aspectRatio: '16:9' });
@@ -22,7 +22,7 @@ describe('project store', () => {
   });
 
   it('lists registered projects in registry order', async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-projects-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-projects-'));
     const store = createProjectStore(root);
 
     const first = await store.createProject({ name: 'First Project', aspectRatio: '16:9' });
@@ -32,7 +32,7 @@ describe('project store', () => {
   });
 
   it('rejects project names that are not a single safe folder segment', async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-projects-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-projects-'));
     const store = createProjectStore(root);
 
     for (const name of ['', '   ', '.', '..', 'nested/project', 'nested\\project']) {
@@ -41,8 +41,8 @@ describe('project store', () => {
   });
 
   it('rejects hostile registry folders outside the project root', async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-projects-'));
-    const outside = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-outside-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-projects-'));
+    const outside = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-outside-'));
     const store = createProjectStore(root);
 
     await fs.writeFile(path.join(outside, 'project.json'), JSON.stringify({ name: 'Outside' }), 'utf8');
@@ -56,8 +56,8 @@ describe('project store', () => {
   });
 
   it('rejects registry projects that escape through a directory link', async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-projects-'));
-    const outside = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-outside-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-projects-'));
+    const outside = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-outside-'));
     const linkPath = path.join(root, 'escape');
     const store = createProjectStore(root);
 
@@ -83,8 +83,8 @@ describe('project store', () => {
   });
 
   it('rejects a pipeline file link that resolves outside the project directory', async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-projects-'));
-    const outside = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-outside-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-projects-'));
+    const outside = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-outside-'));
     const store = createProjectStore(root);
     const project = await store.createProject({ name: 'Safe Project', aspectRatio: '16:9' });
     const pipelinePath = path.join(root, 'Safe Project', 'pipeline.json');

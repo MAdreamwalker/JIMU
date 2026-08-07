@@ -14,7 +14,7 @@ export function DirectorWorkspace({ projectId }: { projectId: string }) {
   useEffect(() => {
     let isCurrent = true;
 
-    void window.threecut.director.load(projectId).then((loadedDirector) => {
+    void window.jimu.director.load(projectId).then((loadedDirector) => {
       if (isCurrent) {
         setDirector(loadedDirector);
         setSelectedObjectId(loadedDirector.objects[0]?.id ?? null);

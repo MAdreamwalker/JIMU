@@ -115,7 +115,7 @@ function isSafeExternalPackageFilePath(value: unknown): value is string {
     return false;
   }
 
-  return path.posix.extname(normalized).toLowerCase() === '.3cut';
+  return path.posix.extname(normalized).toLowerCase() === '.jimu';
 }
 
 function hasExactKeys(value: unknown, keys: readonly string[]): value is Record<string, unknown> {

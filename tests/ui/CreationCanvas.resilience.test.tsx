@@ -4,7 +4,7 @@ import { CreationCanvas } from '../../src/pages/CreationCanvas';
 
 describe('CreationCanvas resilience', () => {
   it('keeps each asset in its matching type section', async () => {
-    vi.stubGlobal('threecut', {
+    vi.stubGlobal('jimu', {
       canvas: {
         load: vi.fn().mockResolvedValue({
           assets: [
@@ -25,7 +25,7 @@ describe('CreationCanvas resilience', () => {
   });
 
   it('shows an error when the canvas cannot be loaded', async () => {
-    vi.stubGlobal('threecut', {
+    vi.stubGlobal('jimu', {
       canvas: {
         load: vi.fn().mockRejectedValue(new Error('Canvas is invalid')),
         save: vi.fn(),

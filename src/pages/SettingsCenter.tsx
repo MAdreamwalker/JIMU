@@ -6,9 +6,9 @@ export function SettingsCenter() {
 
   useEffect(() => {
     void Promise.all([
-      window.threecut.config.getAll(),
-      window.threecut.storyboardPrompts.read(),
-      window.threecut.skills.list(),
+      window.jimu.config.getAll(),
+      window.jimu.storyboardPrompts.read(),
+      window.jimu.skills.list(),
     ])
       .then(() => setLoaded(true))
       .catch((loadError: unknown) => {
@@ -18,15 +18,15 @@ export function SettingsCenter() {
 
   return (
     <section aria-labelledby="settings-title">
-      <h1 id="settings-title">设置</h1>
-      <h2>模型设置</h2>
-      <h2>云端账户</h2>
-      <h2>生成参数</h2>
-      <h2>Prompt 管理</h2>
-      <h2>Skills 管理</h2>
-      <h2>安全与存储</h2>
-      {loaded ? <p role="status">设置已加载</p> : null}
-      {error ? <p role="alert">无法加载设置：{error}</p> : null}
+      <h1 id="settings-title">Settings</h1>
+      <h2>Model Settings</h2>
+      <h2>Cloud Account</h2>
+      <h2>Generation Parameters</h2>
+      <h2>Prompt Management</h2>
+      <h2>Skills Management</h2>
+      <h2>Security and Storage</h2>
+      {loaded ? <p role="status">Settings loaded</p> : null}
+      {error ? <p role="alert">Unable to load settings: {error}</p> : null}
     </section>
   );
 }

@@ -20,8 +20,8 @@ describe('path policy', () => {
   });
 
   it('blocks dangling symlinks before writes can follow them outside the root', async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-path-root-'));
-    const outside = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-path-outside-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-path-root-'));
+    const outside = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-path-outside-'));
     const linkPath = path.join(root, 'tasks.json');
     const outsideTarget = path.join(outside, 'future-tasks.json');
 

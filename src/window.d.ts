@@ -13,7 +13,7 @@ export {};
 
 declare global {
   interface Window {
-    threecut: {
+    jimu: {
       app: {
         getUserDataPath: () => Promise<string>;
       };

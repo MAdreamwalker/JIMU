@@ -12,15 +12,15 @@ export function Layout({ children }: LayoutProps) {
         <nav aria-label="Primary">
           <a href="#/">
             <FolderKanban size={18} aria-hidden="true" />
-            椤圭洰
+            Projects
           </a>
           <a href="#/tasks">
             <ListChecks size={18} aria-hidden="true" />
-            浠诲姟
+            Tasks
           </a>
           <a href="#/settings">
             <Settings size={18} aria-hidden="true" />
-            璁剧疆
+            Settings
           </a>
         </nav>
       </aside>

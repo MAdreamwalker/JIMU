@@ -10,11 +10,11 @@ type ObjectPanelProps = {
 export function ObjectPanel({ objects, snapshots, selectedObjectId, onSelectObject }: ObjectPanelProps) {
   return (
     <aside aria-labelledby="director-objects-title">
-      <h2 id="director-objects-title">瀵硅薄</h2>
+      <h2 id="director-objects-title">Objects</h2>
       <div>
-        <button type="button">娣诲姞婕斿憳</button>
-        <button type="button">娣诲姞鎽勫奖鏈?</button>
-        <button type="button">娣诲姞鐏厜</button>
+        <button type="button">Add Actor</button>
+        <button type="button">Add Camera</button>
+        <button type="button">Add Light</button>
       </div>
       {objects.length > 0 ? (
         <ul aria-label="Director objects">
@@ -30,13 +30,13 @@ export function ObjectPanel({ objects, snapshots, selectedObjectId, onSelectObje
             </li>
           ))}
         </ul>
-      ) : <p>暂无对象</p>}
-      <h3>快照</h3>
+      ) : <p>No objects</p>}
+      <h3>Snapshots</h3>
       {snapshots.length > 0 ? (
         <ul aria-label="Director snapshots">
           {snapshots.map((snapshot) => <li key={snapshot.id}>{snapshot.name}</li>)}
         </ul>
-      ) : <p>暂无快照</p>}
+      ) : <p>No snapshots</p>}
     </aside>
   );
 }

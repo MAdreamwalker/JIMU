@@ -70,7 +70,7 @@ function createCanvas(overrides: Partial<CanvasDocument['assets'][number]> = {})
 }
 
 async function createTestCanvasStore() {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-canvas-root-'));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-canvas-root-'));
   const projectStore = createProjectStore(root);
   const project = await projectStore.createProject({ name: 'Canvas Project', aspectRatio: '16:9' });
 

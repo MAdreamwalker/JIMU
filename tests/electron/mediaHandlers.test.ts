@@ -49,7 +49,7 @@ describe('media IPC handlers', () => {
 });
 
 async function createProjectMedia() {
-  const rootPath = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-media-handler-'));
+  const rootPath = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-media-handler-'));
   const projectStore = createProjectStore(rootPath);
   const project = await projectStore.createProject({ name: 'Media Project', aspectRatio: '16:9' });
   const mediaPath = 'media/videos/clip.mp4';

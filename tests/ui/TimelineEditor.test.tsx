@@ -4,7 +4,7 @@ import { TimelineEditor } from '../../src/pages/TimelineEditor';
 
 describe('TimelineEditor', () => {
   it('renders core tracks and export action', async () => {
-    vi.stubGlobal('threecut', {
+    vi.stubGlobal('jimu', {
       timeline: {
         load: vi.fn().mockResolvedValue({ durationSeconds: 0, tracks: [] }),
         save: vi.fn(),

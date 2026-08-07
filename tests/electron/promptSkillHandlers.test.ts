@@ -42,7 +42,7 @@ describe('prompt and skill IPC handlers', () => {
 });
 
 async function createHandlerPaths() {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-prompt-skills-'));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-prompt-skills-'));
   return {
     storyboardPromptsPath: path.join(root, 'storyboard-prompts.json'),
     skillsPath: path.join(root, 'skills.json'),

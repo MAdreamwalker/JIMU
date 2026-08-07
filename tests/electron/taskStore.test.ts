@@ -6,7 +6,7 @@ import { appendTask, listTasks } from '../../electron/services/taskStore';
 
 describe('task store', () => {
   it('redacts named JSON secrets and bearer tokens before writing task records', async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-task-root-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-task-root-'));
     const dir = path.join(root, 'project');
     await fs.mkdir(dir);
     const task = await appendTask(dir, {
@@ -28,9 +28,9 @@ describe('task store', () => {
   });
 
   it('rejects a tasks file symlink that resolves outside the project directory', async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-task-root-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-task-root-'));
     const dir = path.join(root, 'project');
-    const outside = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-task-outside-'));
+    const outside = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-task-outside-'));
     await fs.mkdir(dir);
     await fs.writeFile(path.join(outside, 'tasks.json'), JSON.stringify({ tasks: [] }), 'utf8');
 
@@ -48,7 +48,7 @@ describe('task store', () => {
   });
 
   it('allows callers to provide a separate authorized root', async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-task-root-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-task-root-'));
     const dir = path.join(root, 'project');
     await fs.mkdir(dir);
 
@@ -56,7 +56,7 @@ describe('task store', () => {
   });
 
   it('rejects corrupt task documents before appending', async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-task-root-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-task-root-'));
     const dir = path.join(root, 'project');
     await fs.mkdir(dir);
     await fs.writeFile(path.join(dir, 'tasks.json'), JSON.stringify({ tasks: [{ id: 'bad' }] }), 'utf8');

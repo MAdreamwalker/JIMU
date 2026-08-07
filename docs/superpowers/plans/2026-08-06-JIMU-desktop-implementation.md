@@ -1,8 +1,8 @@
-# 3cut-like Desktop Implementation Plan
+# JIMU Desktop Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build an original Electron desktop app that implements the full 3cut-like AI visual creation workflow from project creation to storyboard, director previsualization, timeline editing, MP4 export, Prompt/Skills management, and Provider configuration.
+**Goal:** Build an original Electron desktop app that implements the full JIMU AI visual creation workflow from project creation to storyboard, director previsualization, timeline editing, MP4 export, Prompt/Skills management, and Provider configuration.
 
 **Architecture:** Use Electron for local desktop capabilities, React for the UI, TypeScript domain modules for shared data contracts, Three.js for director previsualization, and ffmpeg/ffprobe invoked by the Electron main process. Renderer code calls local capabilities through a narrow preload bridge; project state is stored as JSON plus relative media paths in project folders.
 
@@ -117,7 +117,7 @@ tests/
 - Create: `tests/ui/App.test.tsx`
 
 **Interfaces:**
-- Produces: `window.threecut` preload namespace with `app.getUserDataPath(): Promise<string>`.
+- Produces: `window.jimu` preload namespace with `app.getUserDataPath(): Promise<string>`.
 - Produces: React routes for `/`, `/project/:projectId/canvas`, `/project/:projectId/storyboard`, `/project/:projectId/director`, `/project/:projectId/timeline`, `/tasks`, and `/settings`.
 
 - [ ] **Step 1: Write the failing smoke test**
@@ -132,9 +132,9 @@ describe('App', () => {
     render(<App />);
 
     expect(screen.getByRole('navigation', { name: 'Primary' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '项目' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '任务' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '设置' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '椤圭洰' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '浠诲姟' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '璁剧疆' })).toBeInTheDocument();
   });
 });
 ```
@@ -149,7 +149,7 @@ Expected: FAIL because `src/App.tsx` does not exist.
 
 ```json
 {
-  "name": "threecut-like-desktop",
+  "name": "jimu-like-desktop",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -195,20 +195,20 @@ export function App() {
         <nav aria-label="Primary">
           <a href="#/">
             <FolderKanban size={18} />
-            项目
+            椤圭洰
           </a>
           <a href="#/tasks">
             <ListChecks size={18} />
-            任务
+            浠诲姟
           </a>
           <a href="#/settings">
             <Settings size={18} />
-            设置
+            璁剧疆
           </a>
         </nav>
       </aside>
       <main>
-        <h1>3cut-like</h1>
+        <h1>JIMU</h1>
       </main>
     </div>
   );
@@ -243,7 +243,7 @@ app.whenReady().then(createWindow);
 ```ts
 import { contextBridge, ipcRenderer } from 'electron';
 
-contextBridge.exposeInMainWorld('threecut', {
+contextBridge.exposeInMainWorld('jimu', {
   app: {
     getUserDataPath: () => ipcRenderer.invoke('app:getUserDataPath') as Promise<string>,
   },
@@ -451,7 +451,7 @@ import { createProjectStore } from '../../electron/services/projectStore';
 
 describe('project store', () => {
   it('creates a project folder with required json files and media directories', async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-projects-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-projects-'));
     const store = createProjectStore(root);
 
     const project = await store.createProject({ name: 'Demo Project', aspectRatio: '16:9' });
@@ -587,8 +587,8 @@ git commit -m "feat: add local project storage"
 - Test: `tests/ui/ProjectCenter.test.tsx`
 
 **Interfaces:**
-- Produces: `window.threecut.registry.list(): Promise<ProjectMetadata[]>`.
-- Produces: `window.threecut.registry.create(input: { name: string; aspectRatio: ProjectAspectRatio }): Promise<ProjectMetadata>`.
+- Produces: `window.jimu.registry.list(): Promise<ProjectMetadata[]>`.
+- Produces: `window.jimu.registry.create(input: { name: string; aspectRatio: ProjectAspectRatio }): Promise<ProjectMetadata>`.
 - Consumes: `createProjectStore(rootPath)` from Task 3.
 
 - [ ] **Step 1: Write failing UI test**
@@ -602,11 +602,11 @@ import { ProjectCenter } from '../../src/pages/ProjectCenter';
 describe('ProjectCenter', () => {
   it('creates a project through the preload API', async () => {
     const create = vi.fn().mockResolvedValue({ id: 'proj_abc', name: 'Demo', aspectRatio: '16:9' });
-    vi.stubGlobal('threecut', { registry: { list: vi.fn().mockResolvedValue([]), create } });
+    vi.stubGlobal('jimu', { registry: { list: vi.fn().mockResolvedValue([]), create } });
 
     render(<ProjectCenter />);
-    await userEvent.type(screen.getByLabelText('项目名称'), 'Demo');
-    await userEvent.click(screen.getByRole('button', { name: '创建项目' }));
+    await userEvent.type(screen.getByLabelText('椤圭洰鍚嶇О'), 'Demo');
+    await userEvent.click(screen.getByRole('button', { name: '鍒涘缓椤圭洰' }));
 
     expect(create).toHaveBeenCalledWith({ name: 'Demo', aspectRatio: '16:9' });
   });
@@ -656,18 +656,18 @@ export function ProjectCenter() {
   const [message, setMessage] = useState('');
 
   async function createProject() {
-    const project = await window.threecut.registry.create({ name, aspectRatio: '16:9' });
-    setMessage(`已创建 ${project.name}`);
+    const project = await window.jimu.registry.create({ name, aspectRatio: '16:9' });
+    setMessage(`宸插垱寤?${project.name}`);
   }
 
   return (
     <section aria-labelledby="project-title">
-      <h1 id="project-title">项目中心</h1>
+      <h1 id="project-title">椤圭洰涓績</h1>
       <label>
-        项目名称
+        椤圭洰鍚嶇О
         <input value={name} onChange={(event) => setName(event.target.value)} />
       </label>
-      <button type="button" onClick={createProject}>创建项目</button>
+      <button type="button" onClick={createProject}>鍒涘缓椤圭洰</button>
       {message ? <p role="status">{message}</p> : null}
     </section>
   );
@@ -803,7 +803,7 @@ import type { AiProvider } from './ProviderRegistry';
 export function createOpenAiCompatibleProvider(): AiProvider {
   return {
     id: 'openai-compatible',
-    label: 'OpenAI 兼容',
+    label: 'OpenAI 鍏煎',
     capabilities: ['text', 'image', 'image-to-image', 'polling'],
   };
 }
@@ -833,8 +833,8 @@ git commit -m "feat: add ai provider registry"
 - Test: `tests/electron/taskStore.test.ts`
 
 **Interfaces:**
-- Produces: `window.threecut.pipeline.load(projectId: string): Promise<PipelineDocument>`.
-- Produces: `window.threecut.pipeline.save(projectId: string, pipeline: PipelineDocument): Promise<void>`.
+- Produces: `window.jimu.pipeline.load(projectId: string): Promise<PipelineDocument>`.
+- Produces: `window.jimu.pipeline.save(projectId: string, pipeline: PipelineDocument): Promise<void>`.
 - Produces: `appendTask(projectDir: string, task: TaskRecord): Promise<TaskRecord>`.
 
 - [ ] **Step 1: Write failing task store test**
@@ -848,7 +848,7 @@ import { appendTask } from '../../electron/services/taskStore';
 
 describe('task store', () => {
   it('redacts api keys before writing task records', async () => {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-task-'));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-task-'));
     const task = await appendTask(dir, {
       id: 'task_123',
       category: 'text',
@@ -876,15 +876,15 @@ import { StoryboardWizard } from '../../src/pages/StoryboardWizard';
 
 describe('StoryboardWizard', () => {
   it('shows every pipeline stage', async () => {
-    vi.stubGlobal('threecut', {
+    vi.stubGlobal('jimu', {
       pipeline: { load: vi.fn().mockResolvedValue({ stages: {} }), save: vi.fn() },
     });
 
     render(<StoryboardWizard projectId="proj_abc" />);
 
-    expect(await screen.findByText('文案导入')).toBeInTheDocument();
-    expect(screen.getByText('章节划分')).toBeInTheDocument();
-    expect(screen.getByText('视频生成')).toBeInTheDocument();
+    expect(await screen.findByText('鏂囨瀵煎叆')).toBeInTheDocument();
+    expect(screen.getByText('绔犺妭鍒掑垎')).toBeInTheDocument();
+    expect(screen.getByText('瑙嗛鐢熸垚')).toBeInTheDocument();
   });
 });
 ```
@@ -935,22 +935,22 @@ export async function appendTask(projectDir: string, task: TaskRecord): Promise<
 
 ```tsx
 const stages = [
-  '文案导入',
-  '章节划分',
-  '资产提取',
-  '剧本生成',
-  '镜头规划',
-  '分镜提示词',
-  '图片生成',
-  '视频提示词',
-  '视频生成',
-  '回填时间线',
+  '鏂囨瀵煎叆',
+  '绔犺妭鍒掑垎',
+  '璧勪骇鎻愬彇',
+  '鍓ф湰鐢熸垚',
+  '闀滃ご瑙勫垝',
+  '鍒嗛暅鎻愮ず璇?,
+  '鍥剧墖鐢熸垚',
+  '瑙嗛鎻愮ず璇?,
+  '瑙嗛鐢熸垚',
+  '鍥炲～鏃堕棿绾?,
 ];
 
 export function StoryboardWizard({ projectId }: { projectId: string }) {
   return (
     <section aria-labelledby="storyboard-title" data-project-id={projectId}>
-      <h1 id="storyboard-title">分镜向导</h1>
+      <h1 id="storyboard-title">鍒嗛暅鍚戝</h1>
       <ol>
         {stages.map((stage) => (
           <li key={stage}>
@@ -987,8 +987,8 @@ git commit -m "feat: add storyboard pipeline shell"
 - Test: `tests/ui/CreationCanvas.test.tsx`
 
 **Interfaces:**
-- Produces: `window.threecut.canvas.load(projectId: string): Promise<CanvasDocument>`.
-- Produces: `window.threecut.canvas.save(projectId: string, canvas: CanvasDocument): Promise<void>`.
+- Produces: `window.jimu.canvas.load(projectId: string): Promise<CanvasDocument>`.
+- Produces: `window.jimu.canvas.save(projectId: string, canvas: CanvasDocument): Promise<void>`.
 - Consumes: `Asset` type from Task 2.
 
 - [ ] **Step 1: Write failing canvas UI test**
@@ -1000,12 +1000,12 @@ import { CreationCanvas } from '../../src/pages/CreationCanvas';
 
 describe('CreationCanvas', () => {
   it('groups assets by type', async () => {
-    vi.stubGlobal('threecut', {
+    vi.stubGlobal('jimu', {
       canvas: {
         load: vi.fn().mockResolvedValue({
           assets: [
-            { id: 'asset_1', kind: 'character', state: 'confirmed', name: '主角', description: '少年', prompt: '少年', mediaPaths: [], version: 1 },
-            { id: 'asset_2', kind: 'scene', state: 'draft', name: '街道', description: '夜晚街道', prompt: '夜晚街道', mediaPaths: [], version: 1 },
+            { id: 'asset_1', kind: 'character', state: 'confirmed', name: '涓昏', description: '灏戝勾', prompt: '灏戝勾', mediaPaths: [], version: 1 },
+            { id: 'asset_2', kind: 'scene', state: 'draft', name: '琛楅亾', description: '澶滄櫄琛楅亾', prompt: '澶滄櫄琛楅亾', mediaPaths: [], version: 1 },
           ],
           cards: [],
         }),
@@ -1015,10 +1015,10 @@ describe('CreationCanvas', () => {
 
     render(<CreationCanvas projectId="proj_abc" />);
 
-    expect(await screen.findByText('角色')).toBeInTheDocument();
-    expect(screen.getByText('主角')).toBeInTheDocument();
-    expect(screen.getByText('场景')).toBeInTheDocument();
-    expect(screen.getByText('街道')).toBeInTheDocument();
+    expect(await screen.findByText('瑙掕壊')).toBeInTheDocument();
+    expect(screen.getByText('涓昏')).toBeInTheDocument();
+    expect(screen.getByText('鍦烘櫙')).toBeInTheDocument();
+    expect(screen.getByText('琛楅亾')).toBeInTheDocument();
   });
 });
 ```
@@ -1039,7 +1039,7 @@ export function AssetCard({ asset }: { asset: Asset }) {
     <article aria-label={asset.name}>
       <h3>{asset.name}</h3>
       <p>{asset.description}</p>
-      <small>{asset.state} · v{asset.version}</small>
+      <small>{asset.state} 路 v{asset.version}</small>
     </article>
   );
 }
@@ -1053,23 +1053,23 @@ import type { Asset } from '../domain/canvas';
 import { AssetCard } from '../components/cards/AssetCard';
 
 const labels: Record<Asset['kind'], string> = {
-  character: '角色',
-  scene: '场景',
-  prop: '物品',
-  style: '风格',
-  reference: '参考图',
+  character: '瑙掕壊',
+  scene: '鍦烘櫙',
+  prop: '鐗╁搧',
+  style: '椋庢牸',
+  reference: '鍙傝€冨浘',
 };
 
 export function CreationCanvas({ projectId }: { projectId: string }) {
   const [assets, setAssets] = useState<Asset[]>([]);
 
   useEffect(() => {
-    window.threecut.canvas.load(projectId).then((doc) => setAssets(doc.assets));
+    window.jimu.canvas.load(projectId).then((doc) => setAssets(doc.assets));
   }, [projectId]);
 
   return (
     <section aria-labelledby="canvas-title">
-      <h1 id="canvas-title">创作画布</h1>
+      <h1 id="canvas-title">鍒涗綔鐢诲竷</h1>
       {Object.entries(labels).map(([kind, label]) => (
         <section key={kind} aria-labelledby={`asset-${kind}`}>
           <h2 id={`asset-${kind}`}>{label}</h2>
@@ -1113,10 +1113,10 @@ git commit -m "feat: add creation canvas"
 - Test: `tests/ui/SettingsCenter.test.tsx`
 
 **Interfaces:**
-- Produces: `window.threecut.config.getAll(): Promise<AppConfig>`.
-- Produces: `window.threecut.config.save(config: AppConfig): Promise<void>`.
-- Produces: `window.threecut.storyboardPrompts.read(): Promise<Record<string, string>>`.
-- Produces: `window.threecut.skills.save(skills: SkillDefinition[]): Promise<void>`.
+- Produces: `window.jimu.config.getAll(): Promise<AppConfig>`.
+- Produces: `window.jimu.config.save(config: AppConfig): Promise<void>`.
+- Produces: `window.jimu.storyboardPrompts.read(): Promise<Record<string, string>>`.
+- Produces: `window.jimu.skills.save(skills: SkillDefinition[]): Promise<void>`.
 
 - [ ] **Step 1: Write failing settings test**
 
@@ -1127,7 +1127,7 @@ import { SettingsCenter } from '../../src/pages/SettingsCenter';
 
 describe('SettingsCenter', () => {
   it('shows provider and prompt sections', async () => {
-    vi.stubGlobal('threecut', {
+    vi.stubGlobal('jimu', {
       config: { getAll: vi.fn().mockResolvedValue({ providers: [] }), save: vi.fn() },
       storyboardPrompts: { read: vi.fn().mockResolvedValue({ 'chapter-split': 'Split chapters' }) },
       skills: { list: vi.fn().mockResolvedValue([]), save: vi.fn() },
@@ -1135,9 +1135,9 @@ describe('SettingsCenter', () => {
 
     render(<SettingsCenter />);
 
-    expect(await screen.findByText('模型设置')).toBeInTheDocument();
-    expect(screen.getByText('Prompt 管理')).toBeInTheDocument();
-    expect(screen.getByText('Skills 管理')).toBeInTheDocument();
+    expect(await screen.findByText('妯″瀷璁剧疆')).toBeInTheDocument();
+    expect(screen.getByText('Prompt 绠＄悊')).toBeInTheDocument();
+    expect(screen.getByText('Skills 绠＄悊')).toBeInTheDocument();
   });
 });
 ```
@@ -1185,19 +1185,19 @@ export function SettingsCenter() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    Promise.all([window.threecut.config.getAll(), window.threecut.storyboardPrompts.read()]).then(() => setLoaded(true));
+    Promise.all([window.jimu.config.getAll(), window.jimu.storyboardPrompts.read()]).then(() => setLoaded(true));
   }, []);
 
   return (
     <section aria-labelledby="settings-title">
-      <h1 id="settings-title">设置</h1>
-      <h2>模型设置</h2>
-      <h2>云端账号</h2>
-      <h2>生成参数</h2>
-      <h2>Prompt 管理</h2>
-      <h2>Skills 管理</h2>
-      <h2>安全与存储</h2>
-      {loaded ? <p role="status">设置已加载</p> : null}
+      <h1 id="settings-title">璁剧疆</h1>
+      <h2>妯″瀷璁剧疆</h2>
+      <h2>浜戠璐﹀彿</h2>
+      <h2>鐢熸垚鍙傛暟</h2>
+      <h2>Prompt 绠＄悊</h2>
+      <h2>Skills 绠＄悊</h2>
+      <h2>瀹夊叏涓庡瓨鍌?/h2>
+      {loaded ? <p role="status">璁剧疆宸插姞杞?/p> : null}
     </section>
   );
 }
@@ -1227,8 +1227,8 @@ git commit -m "feat: add settings prompt and skills shell"
 - Test: `tests/ui/DirectorWorkspace.test.tsx`
 
 **Interfaces:**
-- Produces: `window.threecut.director.load(projectId: string): Promise<DirectorDocument>`.
-- Produces: `window.threecut.director.save(projectId: string, director: DirectorDocument): Promise<void>`.
+- Produces: `window.jimu.director.load(projectId: string): Promise<DirectorDocument>`.
+- Produces: `window.jimu.director.save(projectId: string, director: DirectorDocument): Promise<void>`.
 - Consumes: `DirectorObject` and `DirectorSnapshot` from `src/domain/director.ts`.
 
 - [ ] **Step 1: Write failing director test**
@@ -1240,15 +1240,15 @@ import { DirectorWorkspace } from '../../src/pages/DirectorWorkspace';
 
 describe('DirectorWorkspace', () => {
   it('renders viewport, object panel, and property panel', async () => {
-    vi.stubGlobal('threecut', {
+    vi.stubGlobal('jimu', {
       director: { load: vi.fn().mockResolvedValue({ objects: [], snapshots: [] }), save: vi.fn() },
     });
 
     render(<DirectorWorkspace projectId="proj_abc" />);
 
-    expect(await screen.findByLabelText('3D 视口')).toBeInTheDocument();
-    expect(screen.getByText('对象')).toBeInTheDocument();
-    expect(screen.getByText('属性')).toBeInTheDocument();
+    expect(await screen.findByLabelText('3D 瑙嗗彛')).toBeInTheDocument();
+    expect(screen.getByText('瀵硅薄')).toBeInTheDocument();
+    expect(screen.getByText('灞炴€?)).toBeInTheDocument();
   });
 });
 ```
@@ -1264,7 +1264,7 @@ Expected: FAIL because DirectorWorkspace does not exist.
 ```tsx
 export function DirectorViewport() {
   return (
-    <div aria-label="3D 视口" role="img">
+    <div aria-label="3D 瑙嗗彛" role="img">
       <canvas data-testid="director-canvas" />
     </div>
   );
@@ -1277,10 +1277,10 @@ export function DirectorViewport() {
 export function ObjectPanel() {
   return (
     <aside>
-      <h2>对象</h2>
-      <button type="button">添加演员</button>
-      <button type="button">添加摄影机</button>
-      <button type="button">添加灯光</button>
+      <h2>瀵硅薄</h2>
+      <button type="button">娣诲姞婕斿憳</button>
+      <button type="button">娣诲姞鎽勫奖鏈?/button>
+      <button type="button">娣诲姞鐏厜</button>
     </aside>
   );
 }
@@ -1290,9 +1290,9 @@ export function ObjectPanel() {
 export function PropertyPanel() {
   return (
     <aside>
-      <h2>属性</h2>
-      <label>位置 X<input type="number" defaultValue={0} /></label>
-      <label>旋转 Y<input type="number" defaultValue={0} /></label>
+      <h2>灞炴€?/h2>
+      <label>浣嶇疆 X<input type="number" defaultValue={0} /></label>
+      <label>鏃嬭浆 Y<input type="number" defaultValue={0} /></label>
     </aside>
   );
 }
@@ -1306,7 +1306,7 @@ import { PropertyPanel } from '../components/director/PropertyPanel';
 export function DirectorWorkspace({ projectId }: { projectId: string }) {
   return (
     <section aria-labelledby="director-title" data-project-id={projectId}>
-      <h1 id="director-title">导演台</h1>
+      <h1 id="director-title">瀵兼紨鍙?/h1>
       <ObjectPanel />
       <DirectorViewport />
       <PropertyPanel />
@@ -1353,7 +1353,7 @@ git commit -m "feat: add director workspace shell"
 **Interfaces:**
 - Produces: `analyzeMedia(filePath: string): Promise<MediaAnalysis>`.
 - Produces: `exportTimeline(input: TimelineExportInput): Promise<{ jobId: string }>` with progress events.
-- Produces: `window.threecut.timeline.load/save/exportMp4/cancelExport`.
+- Produces: `window.jimu.timeline.load/save/exportMp4/cancelExport`.
 
 - [ ] **Step 1: Write failing media analysis test**
 
@@ -1385,15 +1385,15 @@ import { TimelineEditor } from '../../src/pages/TimelineEditor';
 
 describe('TimelineEditor', () => {
   it('renders core tracks and export action', async () => {
-    vi.stubGlobal('threecut', {
+    vi.stubGlobal('jimu', {
       timeline: { load: vi.fn().mockResolvedValue({ tracks: [] }), save: vi.fn(), exportMp4: vi.fn() },
     });
 
     render(<TimelineEditor projectId="proj_abc" />);
 
-    expect(await screen.findByText('视频轨')).toBeInTheDocument();
-    expect(screen.getByText('音频轨')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '导出 MP4' })).toBeInTheDocument();
+    expect(await screen.findByText('瑙嗛杞?)).toBeInTheDocument();
+    expect(screen.getByText('闊抽杞?)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '瀵煎嚭 MP4' })).toBeInTheDocument();
   });
 });
 ```
@@ -1423,18 +1423,18 @@ export function buildFfprobeArgs(filePath: string): string[] {
 - [ ] **Step 5: Implement timeline UI**
 
 ```tsx
-const tracks = ['视频轨', '图片轨', '音频轨', '字幕轨', '标记轨'];
+const tracks = ['瑙嗛杞?, '鍥剧墖杞?, '闊抽杞?, '瀛楀箷杞?, '鏍囪杞?];
 
 export function TimelineEditor({ projectId }: { projectId: string }) {
   return (
     <section aria-labelledby="timeline-title" data-project-id={projectId}>
-      <h1 id="timeline-title">剪辑时间线</h1>
+      <h1 id="timeline-title">鍓緫鏃堕棿绾?/h1>
       {tracks.map((track) => (
         <section key={track} aria-label={track}>
           <h2>{track}</h2>
         </section>
       ))}
-      <button type="button">导出 MP4</button>
+      <button type="button">瀵煎嚭 MP4</button>
     </section>
   );
 }
@@ -1612,7 +1612,7 @@ Expected: PASS and a `dist/` build.
 - [ ] **Step 5: Update README with local commands and workflow**
 
 ````md
-# 3cut-like Desktop
+# JIMU Desktop
 
 ## Development
 

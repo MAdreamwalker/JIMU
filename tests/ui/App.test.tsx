@@ -4,7 +4,7 @@ import { App } from '../../src/App';
 
 describe('App', () => {
   beforeEach(() => {
-    vi.stubGlobal('threecut', {
+    vi.stubGlobal('jimu', {
       registry: { list: vi.fn().mockResolvedValue([]) },
       pipeline: { load: vi.fn().mockResolvedValue({ stages: {} }), save: vi.fn() },
       canvas: { load: vi.fn().mockResolvedValue({ assets: [], cards: [] }), save: vi.fn() },
@@ -33,19 +33,19 @@ describe('App', () => {
     render(<App />);
 
     expect(screen.getByRole('navigation', { name: 'Primary' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '椤圭洰' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '浠诲姟' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '璁剧疆' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Projects' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Tasks' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Settings' })).toBeInTheDocument();
   });
 
   it.each([
-    ['/', '项目中心'],
-    ['/project/demo/canvas', '鍒涗綔鐢诲竷'],
+    ['/', 'Project Center'],
+    ['/project/demo/canvas', 'Canvas'],
     ['/project/demo/storyboard', 'Storyboard'],
     ['/project/demo/director', 'Director'],
     ['/project/demo/timeline', '\u526a\u8f91\u65f6\u95f4\u7ebf'],
     ['/tasks', 'Tasks'],
-    ['/settings', '设置'],
+    ['/settings', 'Settings'],
   ])('renders the page for %s', (path, title) => {
     window.location.hash = `#${path}`;
 
@@ -95,8 +95,8 @@ describe('App', () => {
       updatedAt: '2026-08-06T01:00:00.000Z',
       createdAt: '2026-08-06T00:00:00.000Z',
     });
-    vi.stubGlobal('threecut', {
-      ...(window.threecut as any),
+    vi.stubGlobal('jimu', {
+      ...(window.jimu as any),
       tasks: {
         list: vi.fn().mockResolvedValue([
           {

@@ -52,7 +52,7 @@ function createDirector(): DirectorDocument {
 }
 
 async function createTestDirectorStore() {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'threecut-director-root-'));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'jimu-director-root-'));
   const projectStore = createProjectStore(root);
   const project = await projectStore.createProject({ name: 'Director Project', aspectRatio: '16:9' });
 

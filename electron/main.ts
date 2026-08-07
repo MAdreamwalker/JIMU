@@ -35,7 +35,7 @@ async function createWindow() {
 app.whenReady().then(async () => {
   const userDataPath = app.getPath('userData');
   const projectsPath = path.join(app.getPath('userData'), 'projects');
-  const configStore = createConfigStore(path.join(userDataPath, '3cut-clone-config.json'), createCryptoStore());
+  const configStore = createConfigStore(path.join(userDataPath, 'JIMU-config.json'), createCryptoStore());
   registerProjectHandlers(projectsPath);
   registerPipelineHandlers(projectsPath);
   registerConfigHandlers(() => configStore.load(), (config) => configStore.save(config));
